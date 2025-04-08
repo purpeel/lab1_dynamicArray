@@ -82,13 +82,11 @@ printUI printStringIsSet() {
 
 
 printUI printArrayContents( const Arr *array ) {
-    // system( "clear" );
     printf( "Current content of provided array:\n");
-    printf( "%p\n", array->TI);
 
     size_t shift = 0;
-    for ( int index = 0; index < array->size; index++, shift +=array->TI->getSize() ) {
-        array->TI->print( ( char * ) array->head + shift );
+    for ( int index = 0; index < array->size; index++, shift += array->typeInfo->getSize() ) {
+        array->typeInfo->print( ( char * ) array->head + shift );
 
         printf( ", " );
     }
@@ -97,7 +95,7 @@ printUI printArrayContents( const Arr *array ) {
 
 
 printUI printArrayManagingMenu( const Arr *array ) {
-    // system( "clear" );
+    system( "clear" );
     printArrayContents( array );
 
 }

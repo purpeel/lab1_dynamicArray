@@ -3,22 +3,13 @@
 #include "../inc/collection.h"
 
 
-static struct ArrayStorage {
-    Arr **arrayPtrs;
-    int quantity;
-} ArrayStorage = {NULL, 0};
-
-
-
-Exception addArrayToStorage( Arr *array ) {
-    ArrayStorage.arrayPtrs = realloc( ArrayStorage.arrayPtrs, ( ArrayStorage.quantity + 1 ) * sizeof( Arr * ) );
-    if ( ArrayStorage.arrayPtrs == NULL ) {
+Exception memCopy( elemPtr destination, const elemPtr source, const int size ) {
+    if ( source == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
-
-    *( ArrayStorage.arrayPtrs + ArrayStorage.quantity ) = array;
-    ArrayStorage.quantity++;
-
+    for ( unsigned long index = 0; index < size; index++ ) {
+        *( ( unsigned char * ) destination + index ) = *( ( unsigned char * ) source + index );
+    }
     return SUCCESSFUL_EXECUTION;
 }
 
@@ -29,22 +20,22 @@ Exception init( Arr **array, const TypeInfo *TI ) {
         return MEMORY_ALLOCATION_ERROR;
     }
 
-    ( *array )->TI = TI;
+    ( *array )->typeInfo = TI;
 
 
-    ( *array )->capacity = 1;
+    ( *array )->capacity = 2;
     ( *array )->size = 0;
 
-    ( *array )->head = malloc( ( *array )->TI->getSize() );
-    if ( ( *array )->head == NULL ) {
+    ( *array )->begin = malloc( ( *array )->typeInfo->getSize() * ( *array )->capacity );
+    if ( ( *array )->begin == NULL ) {
         free( ( *array ) );
         return ARRAY_DATA_ALLOCATION_ERROR;
     }
 
-    ( *array )->tail = ( *array )->head;
+    ( *array )->head = ( char * ) ( *array )->begin + ( *array )->typeInfo->getSize();
+    ( *array )->tail = ( char * ) ( *array )->begin + ( *array )->capacity * ( *array )->typeInfo->getSize();
     
-    Exception isStoringSuccessfull = addArrayToStorage( *array );
-    return isStoringSuccessfull;
+    return SUCCESSFUL_EXECUTION;
 }
 
 
@@ -54,50 +45,81 @@ Exception resize( Arr *array, resizeType directive ) {
     switch ( directive )  
     {
     case EXTEND:
-        if ( array->size > ( array->capacity * 0.75 ) && array->capacity < 10000 ) {
-            buffer = realloc( array->head, array->capacity * array->TI->getSize() * 2 );
+        if ( array->size >= ( array->capacity * 0.75 ) && array->capacity < 10000 ) {
+            buffer = malloc( array->size * array->typeInfo->getSize() - 1 );
             if ( buffer == NULL ) {
+                free( buffer );
                 return ARRAY_DATA_ALLOCATION_ERROR;
             } else {
-                array->head = buffer;
-                array->capacity *= 2;
-                array->tail = ( char * ) array->head + ( array->capacity * array->TI->getSize() / sizeof( char * ));
+                array->capacity = array->capacity * 2 + 1;
+                memCopy( buffer, array->head, array->typeInfo->getSize() * ( array->size - 1 ) );
+                array->begin = realloc( array->begin, array->capacity * array->typeInfo->getSize() );
+                if ( array->begin == NULL ) {
+                    free( buffer );
+                    return ARRAY_DATA_ALLOCATION_ERROR;
+                }
+                array->head = array->begin + ( 1 + array->capacity / 4 ) * array->typeInfo->getSize();
+                array->tail = ( char * ) array->begin + ( array->capacity * array->typeInfo->getSize() );
+                memCopy( array->head, buffer, array->typeInfo->getSize() * ( array->size - 1 ) );
             }
         } else if ( array->size > ( array->capacity * 0.25 ) && array->capacity > 10000 ) {
-            buffer = realloc( array->head, (array->capacity + 1000) * array->TI->getSize()  );
+            buffer = malloc( array->size * array->typeInfo->getSize() - 1 );
             if ( buffer == NULL ) {
+                free( buffer );
                 return ARRAY_DATA_ALLOCATION_ERROR;
             } else {
-                array->head = buffer;
                 array->capacity += 1000;
-                array->tail = ( char * ) array->head + ( array->capacity * array->TI->getSize() );
+                memCopy( buffer, array->head, array->typeInfo->getSize() * ( array->size - 1 ) );
+                array->begin = realloc( array->begin, array->capacity * array->typeInfo->getSize() );
+                if ( array->begin == NULL ) {
+                    free( buffer );
+                    return ARRAY_DATA_ALLOCATION_ERROR;
+                }
+                array->head = array->begin + 500;
+                array->tail = ( char * ) array->begin + ( array->capacity * array->typeInfo->getSize() );
+                memCopy( array->head, buffer, array->typeInfo->getSize() * ( array->size - 1 ) );
             }
         }
         break;
     case SHRINK:
         if ( array->size < ( array->capacity * 0.25 ) && array->capacity < 10000 ) {
-            buffer = realloc( array->head, array->capacity * array->TI->getSize() / 2 );
+            buffer = malloc( array->size * array->typeInfo->getSize() - 1 );
             if ( buffer == NULL ) {
+                free( buffer );
                 return ARRAY_DATA_ALLOCATION_ERROR;
             } else {
-                array->head = buffer;
-                array->capacity /= 2;
-                array->tail = ( char * ) array->head + ( array->capacity * array->TI->getSize() / sizeof( char * ));  
+                array->capacity = array->capacity / 2 + 1;
+                memCopy( buffer, array->head, array->typeInfo->getSize() * ( array->size - 1 ) );
+                array->begin = realloc( array->begin, array->capacity * array->typeInfo->getSize() );
+                if ( array->begin == NULL ) {
+                    free( buffer );
+                    return ARRAY_DATA_ALLOCATION_ERROR;
+                }
+                array->head = array->begin + ( 1 + array->capacity / 8 ) * array->typeInfo->getSize();
+                array->tail = ( char * ) array->begin + ( array->capacity * array->typeInfo->getSize() );
+                memCopy( array->head, buffer, array->typeInfo->getSize() * ( array->size - 1 ) );
             }
         } else if ( array->size < ( array->capacity * 0.75 ) && array->capacity > 10000 ) {
-            buffer = realloc( array->head, ( array->capacity - 1000 )* array->TI->getSize() );
+            buffer = malloc( array->size * array->typeInfo->getSize() - 1 );
             if ( buffer == NULL ) {
+                free( buffer );
                 return ARRAY_DATA_ALLOCATION_ERROR;
             } else {
-                array->head = buffer;
                 array->capacity -= 1000;
-                array->tail = ( char * ) array->head + ( array->capacity * array->TI->getSize() / sizeof( char * ));  
+                memCopy( buffer, array->head, array->typeInfo->getSize() * ( array->size - 1 ) );
+                array->begin = realloc( array->begin, array->capacity * array->typeInfo->getSize() );
+                if ( array->begin == NULL ) {
+                    free( buffer );
+                    return ARRAY_DATA_ALLOCATION_ERROR;
+                }
+                array->head = array->begin + 500;
+                array->tail = ( char * ) array->begin + ( array->capacity * array->typeInfo->getSize() );
+                memCopy( array->head, buffer, array->typeInfo->getSize() * ( array->size - 1 ) );
             }
         }
         break;
 
     }
-    printf("size: %d, capacity: %d\n", array->size, array->capacity );
     return SUCCESSFUL_EXECUTION;
 }
 
@@ -110,10 +132,10 @@ Exception append( Arr *array, const elemPtr element ) {
         if ( array->head == NULL ) {
             return MEMORY_ALLOCATION_ERROR;
         }
-        array->tail = ( char * ) array->head + ( array->TI->getSize() * array->size );
+        array->tail = ( char * ) array->begin + ( array->typeInfo->getSize() * array->capacity );
 
-        elemPtr newElem = ( char * ) array->head + ( array->size - 1 ) * array->TI->getSize();
-        array->TI->assign( &newElem, element );
+        elemPtr newElem = ( char * ) array->head + ( array->size - 1 ) * array->typeInfo->getSize();
+        array->typeInfo->assign( &newElem, element );
     } else { 
         return ARRAY_DATA_ALLOCATION_ERROR;
     }
@@ -122,7 +144,28 @@ Exception append( Arr *array, const elemPtr element ) {
 }
 
 
-int readFromInput( Arr *array, const char *input, const int length ) {
+Exception prepend( Arr *array, const elemPtr element ) {
+    array->size++;
+
+    if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {
+        if ( array->head == NULL ) {
+            return MEMORY_ALLOCATION_ERROR;
+        }
+        array->head = ( char * ) array->head - array->typeInfo->getSize();
+
+
+        elemPtr newElem = array->head;
+        array->typeInfo->assign( &newElem, element );
+
+    } else { 
+        return ARRAY_DATA_ALLOCATION_ERROR;
+    }
+
+    return SUCCESSFUL_EXECUTION;
+}
+
+
+Exception readFromInput( Arr *array, const char *input, const int length ) {
     char *buffer = NULL;
     int prevIsSpace = 1, bufferLength = 0, resBufferLength = 0, bufferRecordedCount = 0, readElementsCount = 0, isInQuotes = 0;
     elemPtr newElem = NULL;
@@ -133,11 +176,12 @@ int readFromInput( Arr *array, const char *input, const int length ) {
             if ( prevIsSpace == 0 && readElementsCount != 0 ) {
                 *( buffer + resBufferLength ) = '\0';
 
-                newElem = malloc( array->TI->getSize() );
+                newElem = malloc( array->typeInfo->getSize() );
                 if ( newElem == NULL ) {
-                    return 1;
+                    free( newElem );
+                    return MEMORY_ALLOCATION_ERROR;
                 }
-                array->TI->input( &newElem, buffer );
+                array->typeInfo->input( &newElem, buffer );
                 append( array, newElem );
 
                 free( newElem );
@@ -179,7 +223,8 @@ int readFromInput( Arr *array, const char *input, const int length ) {
                 buffer = malloc( bufferLength );
                 resBufferLength = bufferLength;
                 if ( buffer == NULL ) {
-                    return 1;
+                    free( resBufferLength );
+                    return MEMORY_ALLOCATION_ERROR;
                 }
             }
 
@@ -195,5 +240,5 @@ int readFromInput( Arr *array, const char *input, const int length ) {
     }
     free( buffer );
 
-    return 0;
+    return SUCCESSFUL_EXECUTION;
 }

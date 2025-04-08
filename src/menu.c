@@ -13,11 +13,7 @@
 
 
 execMenu arrayManaging( Arr *array ) {
-
     printArrayManagingMenu( array );
-
-    // arrayManagingMdl( array );
-
 }
 
 
@@ -43,10 +39,9 @@ execMenu kboardInputMenu() {
 
             Exception receiverRes = receiver( &input, &length, stdin );
             if ( receiverRes != SUCCESSFUL_EXECUTION ) {
-
+                free( input );
                 printError( receiverRes );
                 break;
-
             }
 
             init( &array, getStringTI() );
