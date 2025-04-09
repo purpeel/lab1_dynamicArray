@@ -13,27 +13,25 @@ size_t stringGetSize() {
 }
 
 
-int stringDelete( elemPtr arg ) {
-    int res;
-
+Exception stringDelete( elemPtr arg ) {
     free( arg );
 
-    return res;
+    return SUCCESSFUL_EXECUTION;
 }
 
 
-int stringCopy( elemPtr *destination, const elemPtr source ) {
+Exception stringCopy( elemPtr *destination, const elemPtr source ) {
     int length = strlen( (char *) source ) + 1;
 
     if ( *( destination ) == NULL ) {
-        return 1;
+        return MEMORY_ALLOCATION_ERROR;
     }
 
     for ( unsigned i = 0; i < length; i++ ) {
         *( ( char * ) *( destination ) + i ) = *( ( char * ) source + i );
     }
 
-    return 0;
+    return SUCCESSFUL_EXECUTION;
 }
 
 
@@ -88,17 +86,120 @@ void stringPrint( const elemPtr output ) {
 }
 
 
-int stringInput( elemPtr *arg, const char *input ) {
+Exception stringInput( elemPtr *arg, const char *input ) {
     if ( *( arg )== NULL ) {
-        return 1;
+        return MEMORY_ALLOCATION_ERROR;
     }
 
     if ( stringCopy( arg, ( elemPtr ) input ) == 0 ) {
-        return 0;
+        return SUCCESSFUL_EXECUTION;
     } else {
-        return 1;
+        return MEMORY_ALLOCATION_ERROR;
     }
 
+}
+
+
+// bool isAlpha( const elemPtr arg ) {
+//     int len = strlen( (char *) arg );
+//     bool result = true;
+
+//     for ( short index = 0; index < len; index++ ) {
+//         unsigned asciiCode = (unsigned) *( (char *) arg + index );
+//         if ( ( asciiCode < 'A' || asciiCode > 'Z' ) && ( asciiCode < 'a' || asciiCode > 'z' ) ) {
+//             result = false;
+//         }
+//     }
+
+//     return result;
+// }
+
+
+// bool isDigit( const elemPtr arg ) {
+//     int len = strlen( (char *) arg );
+//     bool result = true;
+
+//     for ( short index = 0; index < len; index++ ) {
+//         unsigned asciiCode = (unsigned) *( (char *) arg + index );
+//         if ( asciiCode < '0' || asciiCode > '9' ) {
+//             result = false;
+//         }
+//     }
+
+//     return result;
+// }
+
+
+// bool isUpperCase( const elemPtr arg ) {
+//     int len = strlen( (char *) arg );
+//     bool result = true;
+
+//     for ( short index = 0; index < len; index++ ) {
+//         unsigned asciiCode = ( unsigned ) *( ( char * ) arg + index );
+//         if ( asciiCode < 'A' || asciiCode > 'Z' ) {
+//             result = false;
+//         }
+//     }
+
+//     return result;
+// }
+
+
+// bool isLowerCase( const elemPtr arg ) {
+//     int len = strlen( (char *) arg );
+//     bool result = true;
+
+//     for ( short index = 0; index < len; index++ ) {
+//         unsigned asciiCode = (unsigned) *( (char *) arg + index );
+//         if ( asciiCode < 'a' || asciiCode > 'z' ) {
+//             result = false;
+//         }
+//     }
+
+//     return result;
+// }
+
+
+Exception invertString( elemPtr arg ) {
+    int len = strlen( (char *) arg );
+    char *temp = malloc( len + 1 );
+    if ( temp == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+
+    stringCopy( &temp, arg );
+
+    for ( short index = 0; index < len; index++ ) {
+        *( ( char * ) arg + index ) = *( temp + len - 1 - index );
+    }
+
+    return SUCCESSFUL_EXECUTION;
+}
+
+
+Exception toLowerCase( elemPtr arg ) {
+    int len = strlen( (char *) arg );
+
+    for ( short index = 0; index < len; index++ ) {
+        if ( *( ( char * ) arg + index ) >= 'A' && *( ( char * ) arg + index ) <= 'Z' ) {
+            *( ( char * ) arg + index ) += 32;
+        }
+    }
+
+    return SUCCESSFUL_EXECUTION;
+}
+
+
+Exception toUpperCase( elemPtr arg ) {
+    int len = strlen( (char *) arg );
+
+    for ( short index = 0; index < len; index++ ) {
+        if ( *( ( char * ) arg + index ) >= 'a' && *( ( char * ) arg + index ) <= 'z' ) {
+            *( ( char * ) arg + index ) -= 32;
+        }
+    }
+
+    return SUCCESSFUL_EXECUTION;
 }
 
 
@@ -111,6 +212,7 @@ const TypeInfo *getStringTI() {
         if ( stringTI == NULL ) {
             return NULL;
         }
+        stringTI->typeName = "string";
 
         stringTI->input = stringInput;
         stringTI->assign = stringCopy;

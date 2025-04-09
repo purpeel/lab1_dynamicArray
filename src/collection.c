@@ -3,6 +3,34 @@
 #include "../inc/collection.h"
 
 
+static ArrayStorage *storage = NULL;
+
+
+ArrayStorage *getStorage() {
+    if ( storage == NULL ) {
+        storage = malloc( sizeof( ArrayStorage ) );
+        if ( storage == NULL ) {
+            return MEMORY_ALLOCATION_ERROR;
+        }
+        storage->count = 0;
+        storage->arrayPtrs = NULL;
+    }
+    return storage;
+}
+
+
+Exception addArrayToStorage( Arr *array, ArrayStorage *storage ) {
+    storage->count++;
+    storage->arrayPtrs = realloc( storage->arrayPtrs, storage->count * sizeof( Arr * ) );
+    if ( storage->arrayPtrs == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+
+    storage->arrayPtrs[storage->count - 1] = array;
+    return SUCCESSFUL_EXECUTION;
+}
+
+
 Exception memCopy( elemPtr destination, const elemPtr source, const int size ) {
     if ( source == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
@@ -34,7 +62,11 @@ Exception init( Arr **array, const TypeInfo *TI ) {
 
     ( *array )->head = ( char * ) ( *array )->begin + ( *array )->typeInfo->getSize();
     ( *array )->tail = ( char * ) ( *array )->begin + ( *array )->capacity * ( *array )->typeInfo->getSize();
-    
+
+    Exception storingStatus = addArrayToStorage( *array, getStorage() );
+    if ( storingStatus != SUCCESSFUL_EXECUTION ) {
+        return storingStatus;
+    }
     return SUCCESSFUL_EXECUTION;
 }
 
@@ -182,7 +214,7 @@ Exception readFromInput( Arr *array, const char *input, const int length ) {
                     return MEMORY_ALLOCATION_ERROR;
                 }
                 array->typeInfo->input( &newElem, buffer );
-                append( array, newElem );
+                prepend( array, newElem );
 
                 free( newElem );
                 free( buffer );

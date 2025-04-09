@@ -81,6 +81,18 @@ printUI printStringIsSet() {
 }
 
 
+printUI printArrayStorage( ArrayStorage *storage ) {
+    printf( "Enter a number of array you want to work with.\n" );
+    printf( "Current array storage:\n" );
+    printf( "%p\n", storage->arrayPtrs[0]);
+    printf("%d\n", storage->arrayPtrs[0]->size);
+
+    for ( short index = 0; index < storage->count; index++ ) {
+        printf("%d. Of type %s, containing %d elements.\n", index + 1, storage->arrayPtrs[index]->typeInfo->typeName, storage->arrayPtrs[index]->size );
+    }
+}
+
+
 printUI printArrayContents( const Arr *array ) {
     printf( "Current content of provided array:\n");
 
@@ -94,8 +106,21 @@ printUI printArrayContents( const Arr *array ) {
 }
 
 
-printUI printArrayManagingMenu( const Arr *array ) {
+printUI printSortingMenu() {
     system( "clear" );
-    printArrayContents( array );
+    printf( "Choose sorting method. Again, enter a number of chosen method.\n" );
+    printf( "0. Return to main menu.\n" );
+    printf( "1. Bubble sort.\n" );
+    printf( "2. Heap sort.\n" );
+}
 
+
+printUI printArrayManagingMenu() {
+    system( "clear" );
+    printf( "Choose operation to perform on arrays. Again, enter a number of chosen operation.\n" );
+    printf( "0. Return to main menu.\n" );
+    printf( "1. Sort one of the arrays available in the storage.\n" );
+    printf( "2. Concatenate two of the arrays available in the storage.\n" );
+    printf( "3. Perform map() operation on one of the arrays available in the storage.\n" );
+    printf( "4. Perform where() operation on one of the arrays available in the storage.\n" );
 }

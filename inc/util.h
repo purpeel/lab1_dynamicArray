@@ -37,8 +37,6 @@ typedef enum execStatus {
 } Exception;
 
 
-
-void errorPrint( int );
 Exception charToInt( const char*, int * );
 Exception charToDouble( const char*, double *);
 

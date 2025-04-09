@@ -7,7 +7,6 @@
 
 
 const TypeInfo *getStringTI();
-int stringCopy( elemPtr *, const elemPtr );
 
 
 #endif

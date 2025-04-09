@@ -18,6 +18,15 @@ typedef struct _dynamicArray {
 } Arr;
 
 
+typedef struct ArrayStorage {
+    Arr **arrayPtrs;
+    int count;
+} ArrayStorage;
+
+
+ArrayStorage *getStorage();
+
+
 typedef enum {
     EXTEND,
     SHRINK
@@ -34,7 +43,7 @@ int delete( Arr * );
 int map( Arr *, unaryOperator );
 int where( Arr *, predicate );
 int getElem( Arr, const int );
-Exception addArrayToStorage( Arr * );
+Exception addArrayToStorage( Arr *, ArrayStorage * );
 
 
 #endif

@@ -10,10 +10,83 @@
 // //         return 0;
 // //     }
 // // }
+execMenu chooseArray( Arr **array ) {
+    int cmd;
+    char *input = NULL;
+
+    printArrayStorage( getStorage() );
+
+    Exception cmdStatus = cmdInput( &cmd, getStorage()->count );
+
+    if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
+        *array = getStorage()->arrayPtrs[cmd];
+    }
+} 
 
 
-execMenu arrayManaging( Arr *array ) {
-    printArrayManagingMenu( array );
+execMenu sortingMenu() {
+    int cmd;
+    char *input = NULL;
+    Arr *array;
+
+    chooseArray( &array );     
+    printSortingMenu();
+
+    Exception cmdStatus = cmdInput( &cmd, getStorage()->count );
+    switch ( cmd )
+    {
+    case 0:
+        
+        break;
+    
+    case 1:
+        
+        printArrayContents( array );
+        // bubbleSort( array );
+        // printArrayContents( array );
+        break;
+    
+    case 2:
+
+        printArrayContents( array );
+        // heapSort( array );
+        // printArrayContents( array );
+        break;
+        
+    default:
+
+        break;
+    }
+
+
+}
+
+
+execMenu arrayManaging() {
+    int cmd;
+    char *input = NULL;
+
+    printArrayManagingMenu();
+    Exception cmdStatus = cmdInput( &cmd, 4 );
+
+    if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
+
+        switch ( cmd )
+        {
+        case 0:
+
+            break;
+            
+        case 1:
+            
+            sortingMenu();
+
+            break;
+        
+        default:
+            break;
+        }
+    }
 }
 
 
@@ -48,7 +121,9 @@ execMenu kboardInputMenu() {
             readFromInput( array, input, length );
             free( input );
 
-            arrayManaging( array );
+            printf( "%p\n", array );
+
+            arrayManaging();
 
             break;
             

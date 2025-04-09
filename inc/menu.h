@@ -4,8 +4,6 @@
 
 #include "ui.h"
 #include "input.h"
-#include "stringTypeinfo.h"
-#include "doubleTypeinfo.h"
 #include "collection.h"
 #include "util.h"
 

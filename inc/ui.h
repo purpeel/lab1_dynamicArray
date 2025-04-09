@@ -15,7 +15,10 @@ printUI printExit( const menuDirective );
 printUI printKboardInputMenu();
 printUI printDoubleIsSet();
 printUI printStringIsSet();
-printUI printArrayManagingMenu( const Arr * );
+printUI printArrayContents( const Arr * );
+printUI printArrayManagingMenu();
+printUI printArrayStorage( ArrayStorage * );
+printUI printSortingMenu();
 
 
 #endif
