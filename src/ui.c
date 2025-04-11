@@ -99,8 +99,8 @@ printUI printArrayContents( const Arr *array ) {
     size_t shift = 0;
     for ( int index = 0; index < array->size; index++, shift += array->typeInfo->getSize() ) {
         array->typeInfo->print( ( char * ) array->head + shift );
-
-        printf( ", " );
+        if ( index < array->size - 1 ) { printf( ", " ); }
+        else { printf(".\n"); }
     }
     printf("\n");
 }
@@ -110,8 +110,10 @@ printUI printSortingMenu() {
     system( "clear" );
     printf( "Choose sorting method. Again, enter a number of chosen method.\n" );
     printf( "0. Return to main menu.\n" );
-    printf( "1. Bubble sort.\n" );
-    printf( "2. Heap sort.\n" );
+    printf( "1. Ascending bubble sort.\n" );
+    printf( "2. Descending bubble sort.\n" );
+    printf( "3. Ascending heap sort.\n" );
+    printf( "4. Descending heap sort.\n" );
 }
 
 

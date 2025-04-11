@@ -100,69 +100,69 @@ Exception stringInput( elemPtr *arg, const char *input ) {
 }
 
 
-// bool isAlpha( const elemPtr arg ) {
-//     int len = strlen( (char *) arg );
-//     bool result = true;
+bool isAlpha( const elemPtr arg ) {
+    int len = strlen( (char *) arg );
+    bool result = true;
 
-//     for ( short index = 0; index < len; index++ ) {
-//         unsigned asciiCode = (unsigned) *( (char *) arg + index );
-//         if ( ( asciiCode < 'A' || asciiCode > 'Z' ) && ( asciiCode < 'a' || asciiCode > 'z' ) ) {
-//             result = false;
-//         }
-//     }
+    for ( short index = 0; index < len; index++ ) {
+        unsigned asciiCode = (unsigned) *( (char *) arg + index );
+        if ( ( asciiCode < 'A' || asciiCode > 'Z' ) && ( asciiCode < 'a' || asciiCode > 'z' ) ) {
+            result = false;
+        }
+    }
 
-//     return result;
-// }
-
-
-// bool isDigit( const elemPtr arg ) {
-//     int len = strlen( (char *) arg );
-//     bool result = true;
-
-//     for ( short index = 0; index < len; index++ ) {
-//         unsigned asciiCode = (unsigned) *( (char *) arg + index );
-//         if ( asciiCode < '0' || asciiCode > '9' ) {
-//             result = false;
-//         }
-//     }
-
-//     return result;
-// }
+    return result;
+}
 
 
-// bool isUpperCase( const elemPtr arg ) {
-//     int len = strlen( (char *) arg );
-//     bool result = true;
+bool isDigit( const elemPtr arg ) {
+    int len = strlen( (char *) arg );
+    bool result = true;
 
-//     for ( short index = 0; index < len; index++ ) {
-//         unsigned asciiCode = ( unsigned ) *( ( char * ) arg + index );
-//         if ( asciiCode < 'A' || asciiCode > 'Z' ) {
-//             result = false;
-//         }
-//     }
+    for ( short index = 0; index < len; index++ ) {
+        unsigned asciiCode = (unsigned) *( (char *) arg + index );
+        if ( asciiCode < '0' || asciiCode > '9' ) {
+            result = false;
+        }
+    }
 
-//     return result;
-// }
+    return result;
+}
 
 
-// bool isLowerCase( const elemPtr arg ) {
-//     int len = strlen( (char *) arg );
-//     bool result = true;
+bool isUpperCase( const elemPtr arg ) {
+    int len = strlen( (char *) arg );
+    bool result = true;
 
-//     for ( short index = 0; index < len; index++ ) {
-//         unsigned asciiCode = (unsigned) *( (char *) arg + index );
-//         if ( asciiCode < 'a' || asciiCode > 'z' ) {
-//             result = false;
-//         }
-//     }
+    for ( short index = 0; index < len; index++ ) {
+        unsigned asciiCode = ( unsigned ) *( ( char * ) arg + index );
+        if ( asciiCode < 'A' || asciiCode > 'Z' ) {
+            result = false;
+        }
+    }
 
-//     return result;
-// }
+    return result;
+}
+
+
+bool isLowerCase( const elemPtr arg ) {
+    int len = strlen( (char *) arg );
+    bool result = true;
+
+    for ( short index = 0; index < len; index++ ) {
+        unsigned asciiCode = (unsigned) *( (char *) arg + index );
+        if ( asciiCode < 'a' || asciiCode > 'z' ) {
+            result = false;
+        }
+    }
+
+    return result;
+}
 
 
 Exception invertString( elemPtr arg ) {
     int len = strlen( (char *) arg );
-    char *temp = malloc( len + 1 );
+    elemPtr temp = malloc( len + 1 );
     if ( temp == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
@@ -170,7 +170,7 @@ Exception invertString( elemPtr arg ) {
     stringCopy( &temp, arg );
 
     for ( short index = 0; index < len; index++ ) {
-        *( ( char * ) arg + index ) = *( temp + len - 1 - index );
+        *( ( char * ) arg + index ) = *( ( char * ) temp + len - 1 - index );
     }
 
     return SUCCESSFUL_EXECUTION;
@@ -203,6 +203,25 @@ Exception toUpperCase( elemPtr arg ) {
 }
 
 
+elemPtr stringMax( const elemPtr arg1, const elemPtr arg2 ) {
+    if ( stringCompare( arg1, arg2 ) == GREATER ) {
+        return arg1;
+    } else {
+        return arg2;
+    }
+}
+
+
+Exception stringSwap( elemPtr *elem1, elemPtr *elem2 ) {
+    elemPtr temp;
+    temp = *elem1;
+    *elem1 = *elem2;
+    *elem2 = temp;
+
+    return SUCCESSFUL_EXECUTION;
+}
+
+
 static TypeInfo *stringTI = NULL;
 
 
@@ -213,11 +232,13 @@ const TypeInfo *getStringTI() {
             return NULL;
         }
         stringTI->typeName = "string";
+        stringTI->swap = stringSwap;
 
         stringTI->input = stringInput;
         stringTI->assign = stringCopy;
 
         stringTI->compare = stringCompare;
+        stringTI->maximum = stringMax;
         
         stringTI->getSize = stringGetSize;
         stringTI->destruct = stringDelete;

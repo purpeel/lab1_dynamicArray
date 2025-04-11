@@ -40,5 +40,7 @@ typedef enum execStatus {
 Exception charToInt( const char*, int * );
 Exception charToDouble( const char*, double *);
 
+double power( const double, int );
+
 
 #endif

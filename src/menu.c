@@ -3,13 +3,15 @@
 #include "../inc/menu.h"
 
 
-// // int isArgvCorrectCtrl( int argc, const char **argv ) {
-// //     if ( argc == 1 || containsFilename( argv ) == 0 ) {
-// //         return 11;
-// //     } else {
-// //         return 0;
-// //     }
-// // }
+// int isArgvCorrectCtrl( int argc, const char **argv ) {
+//     if ( argc == 1 || containsFilename( argv ) == 0 ) {
+//         return 11;
+//     } else {
+//         return 0;
+//     }
+// }
+
+
 execMenu chooseArray( Arr **array ) {
     int cmd;
     char *input = NULL;
@@ -19,7 +21,7 @@ execMenu chooseArray( Arr **array ) {
     Exception cmdStatus = cmdInput( &cmd, getStorage()->count );
 
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
-        *array = getStorage()->arrayPtrs[cmd];
+        *array = getStorage()->arrayPtrs[cmd - 1];
     }
 } 
 
@@ -32,7 +34,7 @@ execMenu sortingMenu() {
     chooseArray( &array );     
     printSortingMenu();
 
-    Exception cmdStatus = cmdInput( &cmd, getStorage()->count );
+    Exception cmdStatus = cmdInput( &cmd, 4 );
     switch ( cmd )
     {
     case 0:
@@ -42,16 +44,31 @@ execMenu sortingMenu() {
     case 1:
         
         printArrayContents( array );
-        // bubbleSort( array );
-        // printArrayContents( array );
+        bubbleSort( array, ASCENDING_ORDER );
+        printArrayContents( array );
         break;
     
     case 2:
 
         printArrayContents( array );
-        // heapSort( array );
-        // printArrayContents( array );
+        bubbleSort( array, DESCENDING_ORDER );
+        printArrayContents( array );
         break;
+
+    case 3:
+        
+        printArrayContents( array );
+        heapSort( array, ASCENDING_ORDER );
+        printArrayContents( array );
+        break;
+    
+    case 4:
+
+        printArrayContents( array );
+        heapSort( array, DESCENDING_ORDER );
+        printArrayContents( array );
+        break;
+
         
     default:
 

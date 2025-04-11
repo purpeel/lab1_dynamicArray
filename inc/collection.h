@@ -37,12 +37,13 @@ Exception init( Arr **, const TypeInfo * );
 Exception readFromInput( Arr *, const char *, const int );
 Exception append( Arr *, const elemPtr );
 Exception prepend( Arr *, const elemPtr );
+Exception indexPush( Arr *, const elemPtr, const int );
 int pop( Arr *, const int, elemPtr );
 int slice( const Arr *, Arr *, const int, const int );
 int delete( Arr * );
-int map( Arr *, unaryOperator );
-int where( Arr *, predicate );
-int getElem( Arr, const int );
+Exception map( Arr *, unaryOperator );
+Exception where( Arr *, predicate );
+Exception getElem( Arr, const int );
 Exception addArrayToStorage( Arr *, ArrayStorage * );
 
 

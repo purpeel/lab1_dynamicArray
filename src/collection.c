@@ -197,6 +197,28 @@ Exception prepend( Arr *array, const elemPtr element ) {
 }
 
 
+Exception indexPush( Arr *array, const elemPtr element, const int index ) {
+    array->size++;
+
+    if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {
+        if ( array->head == NULL ) {
+            return MEMORY_ALLOCATION_ERROR;
+        }
+        array->tail = ( char * ) array->head + array->size * array->typeInfo->getSize();
+
+
+        elemPtr placing = ( char * ) array->head + index * array->typeInfo->getSize();
+        memCopy( placing + array->typeInfo->getSize(), placing, array->size - index + 1 );
+        array->typeInfo->assign( &placing, element );
+
+    } else {
+        return ARRAY_DATA_ALLOCATION_ERROR;
+    }
+
+    return SUCCESSFUL_EXECUTION;
+}
+
+
 Exception readFromInput( Arr *array, const char *input, const int length ) {
     char *buffer = NULL;
     int prevIsSpace = 1, bufferLength = 0, resBufferLength = 0, bufferRecordedCount = 0, readElementsCount = 0, isInQuotes = 0;
@@ -214,7 +236,7 @@ Exception readFromInput( Arr *array, const char *input, const int length ) {
                     return MEMORY_ALLOCATION_ERROR;
                 }
                 array->typeInfo->input( &newElem, buffer );
-                prepend( array, newElem );
+                append( array, newElem );
 
                 free( newElem );
                 free( buffer );

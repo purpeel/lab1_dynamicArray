@@ -10,26 +10,34 @@ typedef void *elemPtr;
 
 
 typedef Exception ( *binaryOperator )( const elemPtr, const elemPtr, elemPtr );
-typedef Exception ( *compareOperator )( const elemPtr, const elemPtr );
+typedef Exception ( *swapOperator )( elemPtr *, elemPtr * );
 typedef Exception ( *unaryOperator )( elemPtr );
 typedef Exception ( *copyConstructor )( elemPtr *, const elemPtr );
+
+typedef Exception ( *compareOperator )( const elemPtr, const elemPtr );
+typedef elemPtr ( *maxOperator )( const elemPtr, const elemPtr );
+
 typedef size_t ( *memoryOperator )();
+
 typedef void ( *printOperator )( const elemPtr );
 typedef Exception ( *inputOperator )( elemPtr *, const char * );
+
 typedef bool ( *predicate )( const elemPtr );
 
 
 typedef struct {
     const char *typeName;
-    inputOperator input;
+    swapOperator swap;
 
     copyConstructor assign;
     compareOperator compare;
+    maxOperator maximum;
 
     memoryOperator getSize;
     unaryOperator destruct;
 
     printOperator print;
+    inputOperator input;
 
     predicate setForWhere[3];
     unaryOperator setForMap[3];
