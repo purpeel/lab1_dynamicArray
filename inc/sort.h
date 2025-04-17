@@ -5,15 +5,14 @@
 #include "collection.h"
 #include "util.h"
 
-
 typedef enum {
     ASCENDING_ORDER,
     DESCENDING_ORDER
 } sortOrder;
 
 
-Exception bubbleSort( Arr *, sortOrder );
-Exception heapSort( Arr *, sortOrder );
+Exception bubbleSort( DynamicArray *, sortOrder );
+Exception heapSort( DynamicArray *, sortOrder );
 
 
 #endif

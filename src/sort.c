@@ -1,31 +1,24 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include "../inc/sort.h"
 
 
-Exception bubbleSort( Arr *array, sortOrder order) {
-    int disorderCount = 0;
+Exception bubbleSort( DynamicArray *array, sortOrder order) {
+    int disorderCount;
     elemPtr *element1, *element2; 
 
     for ( short iterCount = 0; iterCount < array->size; iterCount++ ) {
-        for ( short elemIndex = 0; elemIndex < array->size - iterCount; elemIndex++ ) { 
-            element1 = ( ( char * ) array->head + elemIndex * array->typeInfo->getSize() );
-            element2 = ( ( char * ) array->head + ( elemIndex + 1 ) * array->typeInfo->getSize() );
-            printf( "before swap:\n");
-            array->typeInfo->print( *element1 );
-            array->typeInfo->print( *element2 );
+        disorderCount = 0;
+        for ( short elemIndex = 0; elemIndex < array->size - iterCount - 1; elemIndex++ ) { 
+            element1 = ( elemPtr * ) ( ( char * ) array->head +     elemIndex     * array->typeInfo->getSize() );
+            element2 = ( elemPtr * ) ( ( char * ) array->head + ( elemIndex + 1 ) * array->typeInfo->getSize() );
 
             if        ( array->typeInfo->compare( *element1, *element2 ) == LESS    && order == DESCENDING_ORDER ) {
                 disorderCount++;
                 array->typeInfo->swap( element1, element2 );
-                printf( "after swap:\n");
-                array->typeInfo->print( *element1 );
-                array->typeInfo->print( *element2 );
             } else if ( array->typeInfo->compare( *element1, *element2 ) == GREATER && order == ASCENDING_ORDER ) {
                 disorderCount++;
                 array->typeInfo->swap( element1, element2 );
-                printf( "after swap:\n");
-                array->typeInfo->print( *element1 );
-                array->typeInfo->print( *element2 );
             }
         }
         if ( disorderCount == 0 ) {
@@ -37,59 +30,74 @@ Exception bubbleSort( Arr *array, sortOrder order) {
 }
 
 
-Exception heapify( Arr *array, int heapSize, sortOrder order )
-{
-    elemPtr root, left, right;
-    
-    for ( short index = heapSize / 2; index > 0; index-- ) {
+Exception sift( DynamicArray *array, int heapSize, int index, sortOrder order ) {
 
-        root = ( ( char * ) array->head +   index   * array->typeInfo->getSize() );
-        left = ( ( char * ) array->head + 2 * index * array->typeInfo->getSize() );
+    elemPtr *root, *left, *right, *extr;
+    int extrIndex = index;
+    bool InOrder;
 
-        if ( 2 * index + 1 <= heapSize ) {
+    root = ( elemPtr * ) ( ( char * ) array->head + index * array->typeInfo->getSize() );
+    extr = ( elemPtr * ) ( ( char * ) array->head + extrIndex * array->typeInfo->getSize() );
 
-            right =( ( char * ) array->head + ( 2 * index  + 1 ) * array->typeInfo->getSize());
-
-            if ( array->typeInfo->compare( root, array->typeInfo->maximum( left, right ) ) == GREATER && order == DESCENDING_ORDER ) {
-
-                if ( array->typeInfo->compare( left, right ) == LESS || array->typeInfo->compare( left, right ) == EQUAL ) {
-                    array->typeInfo->swap( &root, &left );
-                }
-                else {
-                    array->typeInfo->swap( &root, &right );
-                }
-            } else if ( array->typeInfo->compare( root, array->typeInfo->maximum( left, right ) ) == LESS && order == ASCENDING_ORDER ) {
-
-                if ( array->typeInfo->compare( left, right ) == GREATER || array->typeInfo->compare( left, right ) == EQUAL ) {
-                    array->typeInfo->swap( &root, &left );
-                }
-                else {
-                    array->typeInfo->swap( &root, &right );
-                }
-            }
-        } else {
-
-            if ( array->typeInfo->compare( root, left ) == GREATER && order == DESCENDING_ORDER ||
-                 array->typeInfo->compare( root, left ) == LESS    && order == ASCENDING_ORDER ) {
-                array->typeInfo->swap( &root, &left );
-            }
+    if ( 2 * index + 1 < heapSize ) {
+        left = ( elemPtr * ) ( ( char * ) array->head + ( 2 * index + 1 ) * array->typeInfo->getSize() );
+        
+        InOrder = ( order == ASCENDING_ORDER ) 
+            ? ( array->typeInfo->compare( *left, *extr ) == LESS )
+            : ( array->typeInfo->compare( *left, *extr ) == GREATER );
+        
+        if ( !InOrder ) {
+            extrIndex = 2 * index + 1;
+            extr = ( elemPtr * ) ( ( char * ) array->head + extrIndex * array->typeInfo->getSize() );
         }
     }
+
+    if ( 2 * index + 2 < heapSize ) {
+        right = ( elemPtr * ) ( ( char * ) array->head + ( 2 * index + 2 ) * array->typeInfo->getSize() );
+
+        InOrder = ( order == ASCENDING_ORDER ) 
+            ? ( array->typeInfo->compare( *right, *extr ) == LESS )
+            : ( array->typeInfo->compare( *right, *extr ) == GREATER );
+
+        if ( !InOrder ) {
+            extrIndex = 2 * index + 2;
+            extr = ( elemPtr * ) ( ( char * ) array->head + extrIndex * array->typeInfo->getSize() );
+        }
+    }
+
+    if ( extrIndex != index ) {
+        extr = ( elemPtr * ) ( ( char * ) array->head + extrIndex * array->typeInfo->getSize() );
+        array->typeInfo->swap( root, extr );
+        sift( array, heapSize, extrIndex, order );
+    }
+
     return SUCCESSFUL_EXECUTION;
 }
 
 
-Exception heapSort( Arr *array, sortOrder order ) {
+Exception buildHeap( DynamicArray *array, int heapSize, sortOrder order )
+{
+
+    for ( short int index = heapSize / 2 - 1; index >= 0; index-- ) {
+        sift( array, heapSize, index, order );
+    }
+    
+    return SUCCESSFUL_EXECUTION;
+}
+
+
+Exception heapSort( DynamicArray *array, sortOrder order ) {
     int heapSize = array->size;
-    elemPtr newRoot, sifted;
+    elemPtr *newRoot, *lastLeaf;
+
+    buildHeap( array, heapSize, order );
 
     for ( short index = 0; index < array->size; index++ ) {
-        heapify( array, heapSize, order );
-        newRoot = ( char * ) array->head;
-        sifted  = ( char * ) array->head + ( heapSize - 1 ) * array->typeInfo->getSize();
-
-        array->typeInfo->swap( &newRoot, &sifted );
+        newRoot = array->head;
+        lastLeaf = ( elemPtr * ) ( ( char * ) array->head + ( heapSize - 1 ) * array->typeInfo->getSize() );
+        array->typeInfo->swap( newRoot, lastLeaf );
         heapSize--;
+        sift( array, heapSize, 0, order );
     }
     
     return SUCCESSFUL_EXECUTION;

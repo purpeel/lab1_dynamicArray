@@ -6,19 +6,25 @@
 #include "collection.h"
 
 
-typedef void printUI;
+typedef void printMenu;
+typedef void printMessage;
+typedef void printData;
 
 
-printUI printMainMenu();
-printUI printError( const Exception );
-printUI printExit( const menuDirective );
-printUI printKboardInputMenu();
-printUI printDoubleIsSet();
-printUI printStringIsSet();
-printUI printArrayContents( const Arr * );
-printUI printArrayManagingMenu();
-printUI printArrayStorage( ArrayStorage * );
-printUI printSortingMenu();
+printMessage printError( const Exception );
+printMessage printExit( const menuDirective );
+printMessage printKboardInputMenu();
+printMessage printDoubleIsSet();
+
+printMenu printStringIsSet();
+printMenu printMapMenu();
+printMenu printArrayManagingMenu();
+printMenu printMainMenu();
+printMenu printSortingMenu();
+printMenu printConcatMenu();
+
+printData printArrayContents( const DynamicArray * );
+printData printArrayStorage( ArrayStorage * );
 
 
 #endif

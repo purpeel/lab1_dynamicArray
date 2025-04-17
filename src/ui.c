@@ -2,17 +2,17 @@
 #include "../inc/ui.h"
 
 
-printUI printMainMenu() {
-    // system( "clear" );
-    printf( "Choose one of the listed functions and enter a number of chosen function.\n" );
-    printf( "Each function is followed by its number.\n\t\t-----\n" );
-    printf( "1 - Enter array contents via keyboard and process them.\n" );
-    printf( "2 - Provide array contents through reading from a .txt file.\n" );
-    printf( "0 - Stop the execution.\n" );
+printMessage printDoubleIsSet() {
+    printf( "Contents type and operations set to double (real numbers).\n");
 }
 
 
-printUI printError( const Exception exeCode ) {
+printMessage printStringIsSet() {
+    printf( "Contents type and operations set to strings.\n");
+}
+
+
+printMessage printError( const Exception exeCode ) {
     system( "clear" );
     switch ( exeCode )
     {
@@ -37,6 +37,15 @@ printUI printError( const Exception exeCode ) {
     case ZERO_LENGTH_INPUT_ERROR:
         printf( "Error. Provided input is empty.\n" );
         break;
+    case EMPTY_STORAGE_ERROR:
+        printf( "Error. Storage is currently empty, provide an array to process it.\n" );
+        break;
+    case ARRAYS_TYPEINFO_MISMATCH_ERROR:
+        printf( "Error. Provided arrays are of different types.\n" );
+        break;
+    case TOO_FEW_ARRAYS_ERROR:
+        printf( "Error. There are not enough arrays in the storage to perform concatenation.\n" );
+        break;
     default:
         break;
     }
@@ -44,8 +53,8 @@ printUI printError( const Exception exeCode ) {
 }
 
 
-printUI printExit( const menuDirective context ) {
-    // system( "clear" );
+printMessage printExit( const menuDirective context ) {
+    system( "clear" );
     switch ( context )
     {
     case 0:
@@ -62,51 +71,55 @@ printUI printExit( const menuDirective context ) {
 }
 
 
-printUI printKboardInputMenu() {
+printMenu printMainMenu() {
+    // system( "clear" );
+    printf( "Choose one of the listed functions and enter a number of chosen function.\n" );
+    printf( "Each function is followed by its number.\n\t\t-----\n" );
+    printf( "1 - Enter array contents via keyboard and process them.\n" );
+    printf( "2 - Provide array contents through reading from a .txt file.\n" );
+    printf( "3 - procceed to array storage without providing any new arrays.\n");
+    printf( "0 - Stop the execution.\n" );
+}
+
+
+printMenu printKboardInputMenu() {
     system( "clear" );
     printf( "Confirm to procceed to keyboard input.\n\t\t-----\n" );
     printf( "1 - confirm and proceed to strings input. Can consist of symbols from standard 7 bit ASCII table.\n" );
-    printf( "2 - confirm and proceed to input real numbers. Can be provided in decimal or exponential format.\n");
+    printf( "2 - confirm and proceed to input real numbers. Can be provided in decimal format.\n");
     printf( "0 - return to main menu.\n");
 }
 
 
-printUI printDoubleIsSet() {
-    printf( "Contents type and operations set to double (real numbers).\n");
+printMenu printMapMenu( DynamicArray *array ) {
+    system( "clear" );
+    printf( "Choose one of the following functions to perform on a chosen array. Enter a number of chosen function.\n" );
+    printf( "0 - Return to main menu.\n" );
+    printf( "1 - Invert all elements: returns opposite element for real numbers and inverts the strings\n" );
+    printf( "2 - Normalize: returns common logarithm for real numbers and applies toLowerCase() to strings\n" );
+    printf( "3 - Sign: return for real numbers is similar to sign(x) function and returns first literal for the strings\n" );
 }
 
 
-printUI printStringIsSet() {
-    printf( "Contents type and operations set to strings.\n");
+printMenu printArrayManagingMenu() {
+    system( "clear" );
+    printf( "Choose operation to perform on arrays. Again, enter a number of chosen operation.\n" );
+    printf( "0. Return to main menu.\n" );
+    printf( "1. Sort one of the arrays available in the storage.\n" );
+    printf( "2. Concatenate two of the arrays available in the storage.\n" );
+    printf( "3. Perform map() operation on one of the arrays available in the storage.\n" );
+    printf( "4. Perform where() operation on one of the arrays available in the storage.\n" );
 }
 
 
-printUI printArrayStorage( ArrayStorage *storage ) {
-    printf( "Enter a number of array you want to work with.\n" );
-    printf( "Current array storage:\n" );
-    printf( "%p\n", storage->arrayPtrs[0]);
-    printf("%d\n", storage->arrayPtrs[0]->size);
-
-    for ( short index = 0; index < storage->count; index++ ) {
-        printf("%d. Of type %s, containing %d elements.\n", index + 1, storage->arrayPtrs[index]->typeInfo->typeName, storage->arrayPtrs[index]->size );
-    }
+printMenu printConcatMenu() {
+    system( "clear" );
+    printf( "0 - Return to main menu.\n" );
+    printf( "1 - Choose two arrays to concatenate. Consecutively enter numbers of chosen arrays.\n" );
 }
 
 
-printUI printArrayContents( const Arr *array ) {
-    printf( "Current content of provided array:\n");
-
-    size_t shift = 0;
-    for ( int index = 0; index < array->size; index++, shift += array->typeInfo->getSize() ) {
-        array->typeInfo->print( ( char * ) array->head + shift );
-        if ( index < array->size - 1 ) { printf( ", " ); }
-        else { printf(".\n"); }
-    }
-    printf("\n");
-}
-
-
-printUI printSortingMenu() {
+printMenu printSortingMenu() {
     system( "clear" );
     printf( "Choose sorting method. Again, enter a number of chosen method.\n" );
     printf( "0. Return to main menu.\n" );
@@ -117,12 +130,26 @@ printUI printSortingMenu() {
 }
 
 
-printUI printArrayManagingMenu() {
-    system( "clear" );
-    printf( "Choose operation to perform on arrays. Again, enter a number of chosen operation.\n" );
-    printf( "0. Return to main menu.\n" );
-    printf( "1. Sort one of the arrays available in the storage.\n" );
-    printf( "2. Concatenate two of the arrays available in the storage.\n" );
-    printf( "3. Perform map() operation on one of the arrays available in the storage.\n" );
-    printf( "4. Perform where() operation on one of the arrays available in the storage.\n" );
+printData printArrayStorage( ArrayStorage *storage ) {
+    if ( storage->count > 0 ) {
+        printf( "Enter a number of array you want to work with.\n" );
+        printf( "Current array storage:\n" );;
+
+        for ( short index = 0; index < storage->count; index++ ) {
+            printf("%d. Of type %s, containing %d elements.\n", index + 1, storage->arrayPtrs[index]->typeInfo->typeName, storage->arrayPtrs[index]->size );
+        }
+    }
+}
+
+
+printData printArrayContents( const DynamicArray *array ) {
+    printf( "Current content of provided array:\n");
+
+    size_t offset = 0;
+    for ( int index = 0; index < array->size; index++, offset += array->typeInfo->getSize() ) {
+        array->typeInfo->print( *( ( elemPtr * ) ( ( char * ) array->head + offset ) ) );
+        if ( index < array->size - 1 ) { printf( ", " ); }
+        else { printf(".\n"); }
+    }
+    printf("\n");
 }

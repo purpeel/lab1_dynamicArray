@@ -16,7 +16,7 @@ double power( const double base, int power ) {
 
     } else { 
 
-        while ( power != 0 ) {
+        while ( power != -1 ) {
             res /= base;
             power++;
         }
@@ -60,10 +60,12 @@ Exception charToInt( const char *source, int *value ) {
 
 
 Exception charToDouble( const char *source, double *value ) {
+    *value = 0.0;
+
     int len = strlen( source );
     int integerPartLen = 0, pointCount = 0;
 
-    for ( short index = 0; *( source + index ) != '\0' || *( source + index ) != '\n'; index++ ) {
+    for ( short index = 0; index < len; index++ ) {
         int asciiCode = ( int ) *( source + index );
 
         if ( asciiCode == '.' ) {
@@ -76,12 +78,15 @@ Exception charToDouble( const char *source, double *value ) {
             }
         }
     }
+    
+    integerPartLen = ( integerPartLen == 0) ? len : integerPartLen;
 
-    for ( short index = 0; *( source + index ) != '\0' || *( source + index ) != '\n'; index++, integerPartLen-- ) {
+    for ( short index = 0; index < len; index++ ) {
         int asciiCode = ( int ) *( source + index );
 
         if ( asciiCode != '.' ) {
-            *value += ( asciiCode - '0') * power(10, integerPartLen - index - 1);
+            *value += ( asciiCode - '0') * power( 10, integerPartLen - index - 1 );
+            printf("%d %d\n", asciiCode - '0', integerPartLen - index - 1);
         }
     }
 

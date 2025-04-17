@@ -9,6 +9,5 @@
 
 Exception receiver(char **, int *, FILE *);
 Exception cmdInput( int *, const int ); 
-Exception kboardInput( Arr *, const TypeInfo * );
 
 #endif

@@ -3,7 +3,7 @@
 head := $(wildcard inc/*.h)
 src := $(wildcard src/*.c)
 obj := $(src:%.h=%.o)
-flags := -Wall -Wextra
+flags := -Wall -Wextra -lm
 
 
 all: launch

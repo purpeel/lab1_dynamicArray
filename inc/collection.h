@@ -11,15 +11,15 @@
 typedef struct _dynamicArray {
     int capacity;
     int size;
-    elemPtr begin;
-    elemPtr head;
-    elemPtr tail;
+    elemPtr *begin;
+    elemPtr *head;
+    elemPtr *tail;
     TypeInfo *typeInfo;
-} Arr;
+} DynamicArray;
 
 
 typedef struct ArrayStorage {
-    Arr **arrayPtrs;
+    DynamicArray **arrayPtrs;
     int count;
 } ArrayStorage;
 
@@ -33,18 +33,19 @@ typedef enum {
 } resizeType;
 
 
-Exception init( Arr **, const TypeInfo * ); 
-Exception readFromInput( Arr *, const char *, const int );
-Exception append( Arr *, const elemPtr );
-Exception prepend( Arr *, const elemPtr );
-Exception indexPush( Arr *, const elemPtr, const int );
-int pop( Arr *, const int, elemPtr );
-int slice( const Arr *, Arr *, const int, const int );
-int delete( Arr * );
-Exception map( Arr *, unaryOperator );
-Exception where( Arr *, predicate );
-Exception getElem( Arr, const int );
-Exception addArrayToStorage( Arr *, ArrayStorage * );
+Exception init( DynamicArray **, const TypeInfo *, const int ); 
+Exception delete( DynamicArray * );
+Exception readFromInput( DynamicArray *, const char *, const int );
+int pop( DynamicArray *, const int, elemPtr );
+int slice( DynamicArray *, const DynamicArray *, const int, const int );
+Exception concatenate( DynamicArray **, const DynamicArray *, const DynamicArray * );
+Exception map( DynamicArray *, unaryOperator );
+Exception where( DynamicArray *, predicate );
+Exception prepend( DynamicArray *, const elemPtr * );                //^ maybe shouldn't be here
+Exception pushIndex( DynamicArray *, const elemPtr *, const int );   //^ maybe shouldn't be here
+Exception copyArray( DynamicArray *, const DynamicArray * );         //^ maybe shouldn't be here 
+Exception append( DynamicArray *, const elemPtr * );                 //^ maybe shouldn't be here
+Exception addArrayToStorage( DynamicArray *, ArrayStorage * );       //^ maybe shouldn't be here
 
 
 #endif

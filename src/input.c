@@ -70,23 +70,3 @@ Exception cmdInput( int *cmd, const int context ) {
 
     }
 }
-
-
-// Exception kboardInput( Arr *array, const TypeInfo *TI ) {
-
-//     char *input = NULL;
-//     int length;
-
-//     Exception receiverRes = receiver( &input, &length, stdin );
-//     if ( receiverRes != SUCCESSFUL_EXECUTION ) {
-
-//         return receiverRes;
-
-//     }
-
-//     init( array, TI );
-//     readFromInput( array, input, length );
-//     free(input);
-
-//     return SUCCESSFUL_EXECUTION;
-// }

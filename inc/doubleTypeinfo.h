@@ -6,12 +6,7 @@
 #include "typeinfo.h"
 
 
-// ResInfo doubleCopy( const void * );
-// ResInfo doubleAddititon( const void *, const void *, ResInfo);
-// SizeResInfo doubleDeletion( void * );
-// SizeResInfo doubleGetSize( void * );
-// ComparisonResult doubleComparison( const void *, const void *, ComparisonResult );
-// const TypeInfo *getDoubleTI();
+const TypeInfo *getDoubleTI();
 
 
 #endif

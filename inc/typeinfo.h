@@ -14,8 +14,8 @@ typedef Exception ( *swapOperator )( elemPtr *, elemPtr * );
 typedef Exception ( *unaryOperator )( elemPtr );
 typedef Exception ( *copyConstructor )( elemPtr *, const elemPtr );
 
-typedef Exception ( *compareOperator )( const elemPtr, const elemPtr );
-typedef elemPtr ( *maxOperator )( const elemPtr, const elemPtr );
+typedef ComparisonResult ( *compareOperator )( const elemPtr, const elemPtr );
+typedef elemPtr ( *extrOperator )( const elemPtr, const elemPtr );
 
 typedef size_t ( *memoryOperator )();
 
@@ -31,7 +31,8 @@ typedef struct {
 
     copyConstructor assign;
     compareOperator compare;
-    maxOperator maximum;
+    extrOperator maximum;
+    extrOperator minimum;
 
     memoryOperator getSize;
     unaryOperator destruct;
