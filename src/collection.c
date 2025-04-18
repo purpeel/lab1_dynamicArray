@@ -20,20 +20,33 @@ ArrayStorage *getStorage() {
 }
 
 
-Exception delete( DynamicArray *array ) {
-    if ( array == NULL ) {
-        return MEMORY_ALLOCATION_ERROR;
+Exception deleteStorage( ArrayStorage *storage ) {
+    if ( storage->count == 0 ) {
+        return SUCCESSFUL_EXECUTION;
     }
-
-    for ( unsigned long index = 0; index < array->size; index++ ) {
-        array->typeInfo->destruct( ( char * ) array->begin + index * array->typeInfo->getSize() );
+    for ( short index = 0; index < storage->count; index++ ) {
+        removeArrayFromStorage( storage->arrayPtrs[index], storage );
     }
-
-    free( array->begin );
-    free( array );
 
     return SUCCESSFUL_EXECUTION;
+}
 
+
+Exception removeArrayFromStorage( DynamicArray *array, ArrayStorage *storage ) {
+    DynamicArray *temp;
+    for ( short index = 0; index < storage->count - 1; index++ ) {
+        if ( storage->arrayPtrs[index] == array ) {
+            temp = storage->arrayPtrs[index + 1];
+            storage->arrayPtrs[index + 1] = storage->arrayPtrs[index];
+            storage->arrayPtrs[index] = temp;
+        }
+    }
+    storage->count--;
+    storage->arrayPtrs = realloc( storage->arrayPtrs, storage->count * sizeof( DynamicArray * ) );
+    if ( storage->arrayPtrs == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    return SUCCESSFUL_EXECUTION;
 }
 
 
@@ -43,7 +56,7 @@ Exception addArrayToStorage( DynamicArray *array, ArrayStorage *storage ) {
     if ( storage->arrayPtrs == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
-
+    
     storage->arrayPtrs[storage->count - 1] = array;
     return SUCCESSFUL_EXECUTION;
 }
@@ -54,22 +67,22 @@ Exception init( DynamicArray **array, const TypeInfo *TI, const int initialCapac
     if ( ( *array ) == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
-
+    
     ( *array )->typeInfo = TI;
-
-
+    
+    
     ( *array )->capacity = initialCapacity;
     ( *array )->size = 0;
-
+    
     ( *array )->begin = malloc( ( *array )->typeInfo->getSize() * ( *array )->capacity );
     if ( ( *array )->begin == NULL ) {
         free( ( *array ) );
         return ARRAY_DATA_ALLOCATION_ERROR;
     }
-
+    
     ( *array )->head = ( elemPtr * ) ( ( char * ) ( *array )->begin + ( *array )->typeInfo->getSize() );
     ( *array )->tail = ( elemPtr * ) ( ( char * ) ( *array )->begin + ( *array )->capacity * ( *array )->typeInfo->getSize() );
-
+    
     Exception storingStatus = addArrayToStorage( *array, getStorage() );
     if ( storingStatus != SUCCESSFUL_EXECUTION ) {
         return storingStatus;
@@ -78,12 +91,35 @@ Exception init( DynamicArray **array, const TypeInfo *TI, const int initialCapac
 }
 
 
+Exception delete( DynamicArray *array ) {
+    if ( array == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+    
+    if ( array->size > 0 ) {
+        for ( int index = 0; index < array->size; index++ ) {
+            array->typeInfo->destruct( ( char * ) array->begin + index * array->typeInfo->getSize() );
+        }
+    }
+
+    if ( removeArrayFromStorage( array, getStorage() ) != SUCCESSFUL_EXECUTION ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+
+    free( array->begin );
+    free( array );
+
+    return SUCCESSFUL_EXECUTION;
+
+}
+
+
 Exception resize( DynamicArray *array, resizeType directive ) {
     elemPtr *buffer;
-
+    
     switch ( directive )  
     {
-    case EXTEND:
+        case EXTEND:
         if ( array->size >= ( array->capacity * 0.75 ) && array->capacity < 10000 ) {
             buffer = ( elemPtr *) malloc( ( array->size - 1 ) * array->typeInfo->getSize() );
             if ( buffer == NULL ) {
@@ -156,8 +192,6 @@ Exception resize( DynamicArray *array, resizeType directive ) {
         break;
     }
 
-    printf("size: %d\t capacity: %d\n", array->size, array->capacity );
-    printf( "begin: %p\t head: %p\t tail: %p\n", array->begin, array->head, array->tail );
     return SUCCESSFUL_EXECUTION;
 }
 
@@ -190,7 +224,6 @@ Exception prepend( DynamicArray *array, const elemPtr *element ) {
     array->size++;
 
     if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {
-        printf( "resize done.\n");
         if ( array->head == NULL ) {
             return MEMORY_ALLOCATION_ERROR;
         }
@@ -241,7 +274,6 @@ Exception copyArray( DynamicArray *destination, const DynamicArray *source ) {
 
     for ( short index = 0; index < source->size; index++ ) {
         sourceElem = ( elemPtr * ) ( ( char * ) source->head + index * source->typeInfo->getSize() );
-        source->typeInfo->print( *sourceElem );
         
         Exception appendStatus = append( destination, sourceElem );
         if ( appendStatus != SUCCESSFUL_EXECUTION ) {
@@ -282,6 +314,28 @@ Exception map( DynamicArray *array, unaryOperator func ) {
         func( *elem );
     }
     
+    return SUCCESSFUL_EXECUTION;
+}
+
+
+Exception where( DynamicArray *array, predicate func ) {
+    DynamicArray *result = NULL;
+
+    Exception initStatus = init( &result, array->typeInfo, 2 );
+    if ( initStatus != SUCCESSFUL_EXECUTION ) {
+        return initStatus;
+    }
+
+    for ( short index = 0; index < array->size; index++ ) {
+        elemPtr *elem = ( elemPtr * ) ( ( char * ) array->head + index * array->typeInfo->getSize() );
+        if ( func( *elem ) ) {
+            Exception appendStatus = append( result, elem );
+            if ( appendStatus != SUCCESSFUL_EXECUTION ) {
+                return appendStatus;
+            }
+        }
+    }
+
     return SUCCESSFUL_EXECUTION;
 }
 

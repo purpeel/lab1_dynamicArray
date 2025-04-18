@@ -12,7 +12,7 @@ size_t doubleGetSize() {
 }
 
 
-Exception doubleDelete( elemPtr arg ) {
+Exception deleteDouble( elemPtr arg ) {
     free ( arg );
 
     return SUCCESSFUL_EXECUTION;
@@ -183,7 +183,7 @@ const TypeInfo *getDoubleTI() {
         doubleTypeInfo->minimum = minDouble;
         
         doubleTypeInfo->getSize = doubleGetSize;
-        doubleTypeInfo->destruct = doubleDelete;
+        doubleTypeInfo->destruct = deleteDouble;
 
         doubleTypeInfo->print = printDouble;
 

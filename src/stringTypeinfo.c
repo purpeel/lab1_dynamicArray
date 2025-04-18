@@ -11,9 +11,8 @@ size_t stringGetSize() {
 }
 
 
-Exception deleteString( elemPtr *arg ) {
+Exception deleteString( elemPtr arg ) {
 
-    free( *arg );
     free( arg );
 
     return SUCCESSFUL_EXECUTION;
@@ -31,7 +30,7 @@ Exception copyString( elemPtr *destination, const elemPtr source ) {
         return MEMORY_ALLOCATION_ERROR;
     }
 
-    for ( unsigned i = 0; i < length; i++ ) {
+    for ( int i = 0; i < length; i++ ) {
         *( *destinationStr + i ) = *( sourceStr + i );
     }
 
@@ -47,7 +46,7 @@ ComparisonResult compareString( const elemPtr elem1, const elemPtr elem2 ) {
 
     if ( len1 == len2 ) {
 
-        for ( unsigned index = 0; index < len1; index++ ) {
+        for ( int index = 0; index < len1; index++ ) {
 
             if ( *( (char *) elem1 + index ) != *( (char *) elem2 + index ) ) {
                 equalFlag = 0;
@@ -64,7 +63,7 @@ ComparisonResult compareString( const elemPtr elem1, const elemPtr elem2 ) {
     } else { 
         minLength = (len1 < len2) ? len1 : len2;
 
-        for ( unsigned index = 0; index < minLength; index++ ) {
+        for ( int index = 0; index < minLength; index++ ) {
 
             if ( *( (char *) elem1 + index ) != *( (char *) elem2 + index ) ) {
 
@@ -94,7 +93,7 @@ void printString( const elemPtr output ) {
 
 Exception inputString( elemPtr *arg, const char *input ) {
 
-    return copyString( arg, input );
+    return copyString( arg, ( elemPtr ) input );
 }
 
 
@@ -130,7 +129,7 @@ bool isUpperCase( const elemPtr arg ) {
 
     for ( short index = 0; index < len; index++ ) {
         unsigned asciiCode = ( unsigned ) *( ( char * ) arg + index );
-        if ( asciiCode >= 'a' || asciiCode <= 'z' ) {
+        if ( asciiCode >= 'a' && asciiCode <= 'z' ) {
             result = false;
         }
     }

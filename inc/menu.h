@@ -11,7 +11,7 @@
 
 typedef menuDirective execMenu;
 
-execMenu mainMenu( const int, const char ** );
+execMenu mainMenu();
 
 
 #endif

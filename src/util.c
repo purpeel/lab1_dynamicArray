@@ -64,9 +64,18 @@ Exception charToDouble( const char *source, double *value ) {
 
     int len = strlen( source );
     int integerPartLen = 0, pointCount = 0;
+    int isNegative = 0;
 
     for ( short index = 0; index < len; index++ ) {
         int asciiCode = ( int ) *( source + index );
+
+        if ( asciiCode < '0' || asciiCode > '9' ) {
+            if ( asciiCode == '-' && index == 0 ) {
+                isNegative = 1;
+            } else if ( asciiCode != '.'  ) {
+                return UNEXPECTED_ALPHA_ERROR;
+            }
+        }
 
         if ( asciiCode == '.' ) {
 
@@ -84,10 +93,13 @@ Exception charToDouble( const char *source, double *value ) {
     for ( short index = 0; index < len; index++ ) {
         int asciiCode = ( int ) *( source + index );
 
-        if ( asciiCode != '.' ) {
+        if ( asciiCode != '.' && asciiCode != '-' ) {
             *value += ( asciiCode - '0') * power( 10, integerPartLen - index - 1 );
-            printf("%d %d\n", asciiCode - '0', integerPartLen - index - 1);
         }
+    }
+    
+    if ( isNegative == 1 ) {
+        *value *= -1;
     }
 
     return SUCCESSFUL_EXECUTION;

@@ -46,6 +46,8 @@ Exception pushIndex( DynamicArray *, const elemPtr *, const int );   //^ maybe s
 Exception copyArray( DynamicArray *, const DynamicArray * );         //^ maybe shouldn't be here 
 Exception append( DynamicArray *, const elemPtr * );                 //^ maybe shouldn't be here
 Exception addArrayToStorage( DynamicArray *, ArrayStorage * );       //^ maybe shouldn't be here
+Exception removeArrayFromStorage(DynamicArray *, ArrayStorage *);    //^ maybe shouldn't be here
+Exception deleteStorage( ArrayStorage * );
 
 
 #endif

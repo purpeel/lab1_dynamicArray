@@ -13,7 +13,7 @@ printMessage printStringIsSet() {
 
 
 printMessage printError( const Exception exeCode ) {
-    system( "clear" );
+    // system( "clear" );
     switch ( exeCode )
     {
     case MEMORY_ALLOCATION_ERROR:
@@ -76,8 +76,7 @@ printMenu printMainMenu() {
     printf( "Choose one of the listed functions and enter a number of chosen function.\n" );
     printf( "Each function is followed by its number.\n\t\t-----\n" );
     printf( "1 - Enter array contents via keyboard and process them.\n" );
-    printf( "2 - Provide array contents through reading from a .txt file.\n" );
-    printf( "3 - procceed to array storage without providing any new arrays.\n");
+    printf( "2 - procceed to array storage without providing any new arrays.\n");
     printf( "0 - Stop the execution.\n" );
 }
 
@@ -91,13 +90,25 @@ printMenu printKboardInputMenu() {
 }
 
 
-printMenu printMapMenu( DynamicArray *array ) {
+printMenu printMapMenu() {
     system( "clear" );
     printf( "Choose one of the following functions to perform on a chosen array. Enter a number of chosen function.\n" );
     printf( "0 - Return to main menu.\n" );
     printf( "1 - Invert all elements: returns opposite element for real numbers and inverts the strings\n" );
     printf( "2 - Normalize: returns common logarithm for real numbers and applies toLowerCase() to strings\n" );
     printf( "3 - Sign: return for real numbers is similar to sign(x) function and returns first literal for the strings\n" );
+}
+
+
+printMenu printWhereMenu() {
+    system( "clear" );
+    printf( "Choose one of the following functions to perform on a chosen array. Enter a number of chosen function.\n" );
+    printf( "0 - Return to main menu.\n" );
+    printf( "1 - Find all elements that are \"normalized\": a string is considered normalized when it's beginning with a" 
+            "lowercase literal and a real number is considered normalized when it's between 0 and 1.\n" );
+    printf( "2 - Perform isRound(): a string consisting of digits is considered round and the"
+            "real number is considered round when it has zero fractional part.\n" );
+    printf( "3 - Find all positive numbers or all uppercase-provided strings.\n" );
 }
 
 

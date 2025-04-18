@@ -3,27 +3,20 @@
 #include "../inc/menu.h"
 
 
-// int isArgvCorrectCtrl( int argc, const char **argv ) {
-//     if ( argc == 1 || containsFilename( argv ) == 0 ) {
-//         return 11;
-//     } else {
-//         return 0;
-//     }
-// }
-
-
-execMenu chooseArray( DynamicArray **array ) {
+Exception getArray( DynamicArray **array ) {
     int cmd;
     
     printArrayStorage( getStorage() );
 
-    Exception cmdStatus = cmdInput( &cmd, getStorage()->count );
+    Exception cmdStatus = cmdInput( &cmd, 1, getStorage()->count );
 
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
         *array = getStorage()->arrayPtrs[cmd - 1];
     } else {
-        printError( cmdStatus );
+        return cmdStatus;
     }
+
+    return SUCCESSFUL_EXECUTION;
 } 
 
 
@@ -31,10 +24,14 @@ execMenu mapMenu() {
     int cmd;
     DynamicArray *array;
 
-    chooseArray( &array );
+    Exception choiceStatus = getArray( &array );
+    if ( choiceStatus != SUCCESSFUL_EXECUTION ) {
+        printError( choiceStatus );
+        return USER_CONTINUE;
+    }
     printMapMenu();
 
-    Exception cmdStatus = cmdInput(&cmd, 3 );
+    Exception cmdStatus = cmdInput(&cmd, 0, 3 );
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
         switch ( cmd )
         {
@@ -63,6 +60,51 @@ execMenu mapMenu() {
         printError( cmdStatus );
     }
 
+    return USER_CONTINUE;
+}
+
+
+execMenu whereMenu() {
+    int cmd;
+    DynamicArray *array;
+
+    Exception choiceStatus = getArray( &array );
+    if ( choiceStatus != SUCCESSFUL_EXECUTION ) {
+        printError( choiceStatus );
+        return USER_CONTINUE;
+    }
+    printWhereMenu();
+
+    Exception cmdStatus = cmdInput(&cmd, 0, 3);
+    if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
+        switch ( cmd )
+        {
+        case 1:
+
+            where(array, array->typeInfo->setForWhere[0]);
+            break;
+
+        case 2:
+
+            where(array, array->typeInfo->setForWhere[1]);
+            break;
+
+        case 3:
+
+            where(array, array->typeInfo->setForWhere[2]);
+            break;
+
+        default:
+            break;
+        }
+
+        printArrayContents( getStorage()->arrayPtrs[getStorage()->count - 1] );
+
+    } else {
+        printError( cmdStatus );
+    }
+
+    return USER_CONTINUE;
 }
 
 
@@ -70,10 +112,15 @@ execMenu sortingMenu() {
     int cmd;
     DynamicArray *array;
 
-    chooseArray( &array );     
+    Exception choiceStatus = getArray( &array );
+    if ( choiceStatus != SUCCESSFUL_EXECUTION ) {
+        printf("xyu!\n");
+        printError( choiceStatus );
+        return USER_CONTINUE;
+    }  
     printSortingMenu();
 
-    Exception cmdStatus = cmdInput( &cmd, 4 );
+    Exception cmdStatus = cmdInput( &cmd, 0, 4 );
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
         switch ( cmd )
         {
@@ -117,6 +164,8 @@ execMenu sortingMenu() {
     } else {
         printError( cmdStatus );
     }
+
+    return USER_CONTINUE;
 }
 
 
@@ -125,7 +174,7 @@ execMenu concatMenu() {
     DynamicArray *array1, *array2, *resArray;
 
     printConcatMenu();
-    Exception cmdStatus = cmdInput( &cmd, 1 );
+    Exception cmdStatus = cmdInput( &cmd, 0, 1 );
 
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
         switch ( cmd )
@@ -136,8 +185,16 @@ execMenu concatMenu() {
 
         case 1:
 
-            chooseArray( &array1 );
-            chooseArray( &array2 );
+            Exception choiceStatus = getArray( &array1 );
+            if ( choiceStatus != SUCCESSFUL_EXECUTION ) {
+                printError( choiceStatus );
+                return USER_CONTINUE;
+            }  
+            choiceStatus = getArray( &array2 );
+            if ( choiceStatus != SUCCESSFUL_EXECUTION ) {
+                printError( choiceStatus );
+                return USER_CONTINUE;
+            }  
 
             Exception concatStatus = concatenate( &resArray, array1, array2 );
             if ( concatStatus != SUCCESSFUL_EXECUTION ) {
@@ -155,6 +212,8 @@ execMenu concatMenu() {
     } else {
         printError( cmdStatus );
     }
+
+    return USER_CONTINUE;
 }
 
 
@@ -162,7 +221,7 @@ execMenu arrayManaging() {
     int cmd;
 
     printArrayManagingMenu();
-    Exception cmdStatus = cmdInput( &cmd, 4 );
+    Exception cmdStatus = cmdInput( &cmd, 0, 4 );
 
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
 
@@ -203,6 +262,13 @@ execMenu arrayManaging() {
             break;
         
         default:
+
+            if ( getStorage()->count == 0 ) {
+                printError( EMPTY_STORAGE_ERROR );
+                break;
+            }
+
+            whereMenu();
             break;
         }
     } else {
@@ -210,6 +276,8 @@ execMenu arrayManaging() {
     }
 
     return 0;
+
+    return USER_CONTINUE;
 }
 
 
@@ -219,7 +287,7 @@ execMenu kboardInputMenu() {
     DynamicArray *array;
 
     printKboardInputMenu();
-    Exception cmdStatus = cmdInput( &cmd, 3 );
+    Exception cmdStatus = cmdInput( &cmd, 0, 3 );
     Exception receiverStatus, initStatus, readStatus;
 
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
@@ -302,21 +370,24 @@ execMenu kboardInputMenu() {
         printError( cmdStatus );
     }
     return 0;
+
+    return USER_CONTINUE;
 }
 
 
-execMenu mainMenu( int argc, const char **argv ) {
+execMenu mainMenu() {
     int cmd;
     menuDirective isStopSignal = USER_CONTINUE;
 
     while ( isStopSignal == USER_CONTINUE ) {
         printMainMenu();
-        Exception cmdStatus = cmdInput( &cmd, 3 );
+        Exception cmdStatus = cmdInput( &cmd, 0, 3 );
         if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
             switch ( cmd )
             {
             case 0:
 
+                deleteStorage( getStorage() );
                 printExit( USER_EXIT );
                 isStopSignal = USER_EXIT;
                 break;
@@ -327,11 +398,6 @@ execMenu mainMenu( int argc, const char **argv ) {
                 break;
             
             case 2:
-                
-                // kboardInputMenu();
-                break;
-            
-            case 3:
 
                 arrayManaging();
                 break;
@@ -346,4 +412,6 @@ execMenu mainMenu( int argc, const char **argv ) {
             continue;
         }
     }
+
+    return USER_EXIT;
 }

@@ -8,6 +8,6 @@
 
 
 Exception receiver(char **, int *, FILE *);
-Exception cmdInput( int *, const int ); 
+Exception cmdInput( int *, const int, const int ); 
 
 #endif

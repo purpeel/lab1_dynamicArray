@@ -18,6 +18,7 @@ printMessage printDoubleIsSet();
 
 printMenu printStringIsSet();
 printMenu printMapMenu();
+printMenu printWhereMenu();
 printMenu printArrayManagingMenu();
 printMenu printMainMenu();
 printMenu printSortingMenu();

@@ -43,7 +43,7 @@ Exception receiver( char **buffer, int *length, FILE *stream ) {
 }
 
 
-Exception cmdInput( int *cmd, const int context ) {
+Exception cmdInput( int *cmd, const int minContext, const int maxContext ) {
     *cmd = 0;
     char *input = malloc( 48 );
     if ( input == NULL ) {
@@ -61,7 +61,7 @@ Exception cmdInput( int *cmd, const int context ) {
     {
     case SUCCESSFUL_EXECUTION:
 
-        if ( *cmd > context ) { return CMD_OUT_OF_CONTEXT_ERROR; }
+        if ( *cmd < minContext || *cmd > maxContext ) { return CMD_OUT_OF_CONTEXT_ERROR; }
         else { return SUCCESSFUL_EXECUTION; }
 
     default:
