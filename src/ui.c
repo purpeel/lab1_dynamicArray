@@ -46,6 +46,9 @@ printMessage printError( const Exception exeCode ) {
     case TOO_FEW_ARRAYS_ERROR:
         printf( "Error. There are not enough arrays in the storage to perform concatenation.\n" );
         break;
+    case NULL_TYPEINFO_ERROR:
+        printf( "Error. Unable to initialize an array without chosing its type.\n" );
+        break;
     default:
         break;
     }

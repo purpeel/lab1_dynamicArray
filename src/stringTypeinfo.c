@@ -20,12 +20,16 @@ Exception deleteString( elemPtr arg ) {
 
 
 Exception copyString( elemPtr *destination, const elemPtr source ) {
+    if ( source == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+
     char **destinationStr = ( char ** ) destination;
     char    *sourceStr   = ( char * ) source;
     
-    int length = strlen( source ) + 1;
+    int length = strlen( ( char * ) source ) + 1;
 
-    *destinationStr = malloc( length );
+    *destinationStr = ( char * ) malloc( length );
     if ( *destinationStr == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
@@ -184,7 +188,7 @@ Exception getFirstLiteral( elemPtr arg ) {
 
 
 elemPtr maxString( const elemPtr arg1, const elemPtr arg2 ) {
-    elemPtr result = ( compareString( arg1, arg2 ) == LESS ) ? arg1 : arg2;
+    elemPtr result = ( compareString( arg1, arg2 ) == LESS ) ? arg2 : arg1;
 
     return result;
 }

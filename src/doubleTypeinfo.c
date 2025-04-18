@@ -25,6 +25,7 @@ Exception assignDouble( elemPtr *destination, const elemPtr source ) {
 
     *destinationDbl = malloc( doubleGetSize() );
     if ( *destinationDbl == NULL ) {
+        printf("Memory allocation error\n");
         return MEMORY_ALLOCATION_ERROR;
     }
 
@@ -97,7 +98,6 @@ bool isPositive( const elemPtr arg1 ) {
 
 
 Exception oppose( elemPtr arg ) {
-    printf("oppose\n");
     double *argDouble = ( double * ) arg;
 
     *argDouble *= ( -1 );
@@ -107,7 +107,6 @@ Exception oppose( elemPtr arg ) {
 
 
 Exception logarithm( elemPtr arg ) {
-    printf("logarithm\n");
     double *argDouble = ( double * ) arg;
     if ( *argDouble == 0.0 ) {
         return SUCCESSFUL_EXECUTION;
@@ -116,14 +115,13 @@ Exception logarithm( elemPtr arg ) {
         *argDouble *= ( -1 );
     }
 
-    *argDouble = log10( *argDouble );
+    *argDouble = log10( fabs( *argDouble ) );
 
     return SUCCESSFUL_EXECUTION;
 }
 
 
 Exception sign( elemPtr arg ) {
-    printf("sign\n");
     double *argDouble = ( double * ) arg;
     if ( *argDouble < 0 ) {
         *argDouble = -1;
@@ -138,14 +136,14 @@ Exception sign( elemPtr arg ) {
 
 
 elemPtr maxDouble( const elemPtr arg1, const elemPtr arg2 ) {
-    elemPtr result = ( compareDouble( arg1, arg2 ) == LESS ) ? arg1 : arg2;
+    elemPtr result = ( compareDouble( arg1, arg2 ) == LESS ) ? arg2 : arg1;
 
     return result;
 }
 
 
 elemPtr minDouble( const elemPtr arg1, const elemPtr arg2 ) {
-    elemPtr result = ( compareDouble( arg1, arg2 ) == GREATER ) ? arg1 : arg2;
+    elemPtr result = ( compareDouble( arg1, arg2 ) == GREATER ) ? arg2 : arg1;
 
     return result;
 }

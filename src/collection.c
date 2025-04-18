@@ -42,9 +42,15 @@ Exception removeArrayFromStorage( DynamicArray *array, ArrayStorage *storage ) {
         }
     }
     storage->count--;
-    storage->arrayPtrs = realloc( storage->arrayPtrs, storage->count * sizeof( DynamicArray * ) );
-    if ( storage->arrayPtrs == NULL ) {
-        return MEMORY_ALLOCATION_ERROR;
+    if ( storage->count == 0 ) {
+        free(storage->arrayPtrs);
+        storage->arrayPtrs = NULL;
+        return SUCCESSFUL_EXECUTION;
+    } else {
+        storage->arrayPtrs = realloc( storage->arrayPtrs, storage->count * sizeof( DynamicArray * ) );
+        if ( storage->arrayPtrs == NULL ) {
+            return MEMORY_ALLOCATION_ERROR;
+        }
     }
     return SUCCESSFUL_EXECUTION;
 }
@@ -67,11 +73,13 @@ Exception init( DynamicArray **array, const TypeInfo *TI, const int initialCapac
     if ( ( *array ) == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
-    
+
+    if ( TI == NULL ) {
+        return NULL_TYPEINFO_ERROR;
+    }    
     ( *array )->typeInfo = TI;
     
-    
-    ( *array )->capacity = initialCapacity;
+    ( *array )->capacity = abs( initialCapacity );
     ( *array )->size = 0;
     
     ( *array )->begin = malloc( ( *array )->typeInfo->getSize() * ( *array )->capacity );
@@ -91,7 +99,7 @@ Exception init( DynamicArray **array, const TypeInfo *TI, const int initialCapac
 }
 
 
-Exception delete( DynamicArray *array ) {
+Exception deleteArray( DynamicArray *array ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
@@ -106,7 +114,6 @@ Exception delete( DynamicArray *array ) {
         return MEMORY_ALLOCATION_ERROR;
     }
 
-    free( array->begin );
     free( array );
 
     return SUCCESSFUL_EXECUTION;
@@ -114,7 +121,7 @@ Exception delete( DynamicArray *array ) {
 }
 
 
-Exception resize( DynamicArray *array, resizeType directive ) {
+Exception resize( DynamicArray *array, const resizeType directive ) {
     elemPtr *buffer;
     
     switch ( directive )  
@@ -198,6 +205,9 @@ Exception resize( DynamicArray *array, resizeType directive ) {
 
 
 Exception append( DynamicArray *array, const elemPtr *element ) {
+    if ( array == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
 
     array->size++;
 
@@ -221,6 +231,9 @@ Exception append( DynamicArray *array, const elemPtr *element ) {
 
 
 Exception prepend( DynamicArray *array, const elemPtr *element ) {
+    if ( array == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
     array->size++;
 
     if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {
@@ -244,6 +257,9 @@ Exception prepend( DynamicArray *array, const elemPtr *element ) {
 
 
 Exception pushIndex( DynamicArray *array, const elemPtr *element, const int index ) {
+    if ( array == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
     array->size++;
 
     if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {

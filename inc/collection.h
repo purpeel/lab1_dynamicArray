@@ -34,10 +34,9 @@ typedef enum {
 
 
 Exception init( DynamicArray **, const TypeInfo *, const int ); 
-Exception delete( DynamicArray * );
+Exception deleteArray( DynamicArray * );
+Exception resize( DynamicArray *, const resizeType );
 Exception readFromInput( DynamicArray *, const char *, const int );
-int pop( DynamicArray *, const int, elemPtr );
-int slice( DynamicArray *, const DynamicArray *, const int, const int );
 Exception concatenate( DynamicArray **, const DynamicArray *, const DynamicArray * );
 Exception map( DynamicArray *, unaryOperator );
 Exception where( DynamicArray *, predicate );

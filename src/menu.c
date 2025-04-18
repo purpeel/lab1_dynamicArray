@@ -296,7 +296,6 @@ execMenu kboardInputMenu() {
         {
         case 0:
 
-            // delete( array );
             break;
         
         case 1:
@@ -314,7 +313,7 @@ execMenu kboardInputMenu() {
             if ( initStatus != SUCCESSFUL_EXECUTION ) {
                 printError( initStatus );
                 free( input );
-                delete( array );
+                deleteArray( array );
                 break;
             }
 
@@ -322,7 +321,7 @@ execMenu kboardInputMenu() {
             if ( readStatus != SUCCESSFUL_EXECUTION ) {
                 printError( readStatus );
                 free( input );
-                delete( array );
+                deleteArray( array );
                 break;
             }
 
@@ -346,7 +345,7 @@ execMenu kboardInputMenu() {
             if ( initStatus != SUCCESSFUL_EXECUTION ) {
                 printError( initStatus );
                 free( input );
-                delete( array );
+                deleteArray( array );
                 break;
             }
 
@@ -354,7 +353,7 @@ execMenu kboardInputMenu() {
             if ( readStatus != SUCCESSFUL_EXECUTION ) {
                 printError( readStatus );
                 free( input );
-                delete( array );
+                deleteArray( array );
                 break;
             }
 
