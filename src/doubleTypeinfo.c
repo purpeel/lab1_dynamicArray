@@ -25,7 +25,6 @@ Exception assignDouble( elemPtr *destination, const elemPtr source ) {
 
     *destinationDbl = malloc( doubleGetSize() );
     if ( *destinationDbl == NULL ) {
-        printf("Memory allocation error\n");
         return MEMORY_ALLOCATION_ERROR;
     }
 

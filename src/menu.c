@@ -67,6 +67,7 @@ execMenu mapMenu() {
 execMenu whereMenu() {
     int cmd;
     DynamicArray *array;
+    Exception whereStatus;
 
     Exception choiceStatus = getArray( &array );
     if ( choiceStatus != SUCCESSFUL_EXECUTION ) {
@@ -81,17 +82,29 @@ execMenu whereMenu() {
         {
         case 1:
 
-            where(array, array->typeInfo->setForWhere[0]);
+            whereStatus = where(array, array->typeInfo->setForWhere[0]);
+            if ( whereStatus != SUCCESSFUL_EXECUTION ) {
+                printError( whereStatus );
+                return USER_CONTINUE;
+            }
             break;
 
         case 2:
 
-            where(array, array->typeInfo->setForWhere[1]);
+            whereStatus = where(array, array->typeInfo->setForWhere[1]);
+            if ( whereStatus != SUCCESSFUL_EXECUTION ) {
+                printError( whereStatus );
+                return USER_CONTINUE;
+            }
             break;
 
         case 3:
 
-            where(array, array->typeInfo->setForWhere[2]);
+            whereStatus = where(array, array->typeInfo->setForWhere[2]);
+            if ( whereStatus != SUCCESSFUL_EXECUTION ) {
+                printError( whereStatus );
+                return USER_CONTINUE;
+            }
             break;
 
         default:
@@ -114,7 +127,6 @@ execMenu sortingMenu() {
 
     Exception choiceStatus = getArray( &array );
     if ( choiceStatus != SUCCESSFUL_EXECUTION ) {
-        printf("xyu!\n");
         printError( choiceStatus );
         return USER_CONTINUE;
     }  

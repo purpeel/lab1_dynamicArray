@@ -40,12 +40,6 @@ Exception readFromInput( DynamicArray *, const char *, const int );
 Exception concatenate( DynamicArray **, const DynamicArray *, const DynamicArray * );
 Exception map( DynamicArray *, unaryOperator );
 Exception where( DynamicArray *, predicate );
-Exception prepend( DynamicArray *, const elemPtr * );                //^ maybe shouldn't be here
-Exception pushIndex( DynamicArray *, const elemPtr *, const int );   //^ maybe shouldn't be here
-Exception copyArray( DynamicArray *, const DynamicArray * );         //^ maybe shouldn't be here 
-Exception append( DynamicArray *, const elemPtr * );                 //^ maybe shouldn't be here
-Exception addArrayToStorage( DynamicArray *, ArrayStorage * );       //^ maybe shouldn't be here
-Exception removeArrayFromStorage(DynamicArray *, ArrayStorage *);    //^ maybe shouldn't be here
 Exception deleteStorage( ArrayStorage * );
 
 

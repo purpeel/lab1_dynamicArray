@@ -6,7 +6,8 @@
 
 static ArrayStorage *storage = NULL;
 
-
+/// @brief function that instantiate global const object storage at the first time it's being called
+/// @return pointer to storage
 ArrayStorage *getStorage() {
     if ( storage == NULL ) {
         storage = malloc( sizeof( ArrayStorage ) );
@@ -19,19 +20,29 @@ ArrayStorage *getStorage() {
     return storage;
 }
 
-
+/// @brief function clearing all data related to storage
+/// @param storage current pointer to global storage
+/// @return status of execution depending on inner calls
 Exception deleteStorage( ArrayStorage *storage ) {
     if ( storage->count == 0 ) {
+        free( storage->arrayPtrs );
+        free( storage );
         return SUCCESSFUL_EXECUTION;
     }
     for ( short index = 0; index < storage->count; index++ ) {
-        removeArrayFromStorage( storage->arrayPtrs[index], storage );
+        Exception removalStatus = removeArrayFromStorage( storage->arrayPtrs[index], storage );
+        if ( removalStatus != SUCCESSFUL_EXECUTION ) {
+            return removalStatus;
+        }
     }
-
+    free( storage );
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief removing array from storage by consecutively swapping its adress with the next one until the end and then reallocating data without last array's address
+/// @param array pointer to array ought to be removed
+/// @param storage current pointer to global storage
+/// @return status of execution depending on inner calls
 Exception removeArrayFromStorage( DynamicArray *array, ArrayStorage *storage ) {
     DynamicArray *temp;
     for ( short index = 0; index < storage->count - 1; index++ ) {
@@ -55,7 +66,10 @@ Exception removeArrayFromStorage( DynamicArray *array, ArrayStorage *storage ) {
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief adding new array pointer to list of array pointers in global storage 
+/// @param array pointer to array ought to be removed
+/// @param storage current pointer to global storage
+/// @return status of execution depending on inner calls
 Exception addArrayToStorage( DynamicArray *array, ArrayStorage *storage ) {
     storage->count++;
     storage->arrayPtrs = realloc( storage->arrayPtrs, storage->count * sizeof( DynamicArray * ) );
@@ -67,7 +81,11 @@ Exception addArrayToStorage( DynamicArray *array, ArrayStorage *storage ) {
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief initializing array at given address with provided typeinfo and initial capacity to prevent multiple resize calls
+/// @param array pointer to address where array's address should be stored
+/// @param TI provided typeInfo interface
+/// @param initialCapacity pretty self-explaining
+/// @return status of execution depending on inner calls
 Exception init( DynamicArray **array, const TypeInfo *TI, const int initialCapacity ) {
     ( *array ) = malloc( sizeof( DynamicArray ) );
     if ( ( *array ) == NULL ) {
@@ -98,7 +116,9 @@ Exception init( DynamicArray **array, const TypeInfo *TI, const int initialCapac
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief removing array and cleaning up all data related to it including removal from storage
+/// @param array pointer to array ought to be removed
+/// @return status of execution depending on inner calls
 Exception deleteArray( DynamicArray *array ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
@@ -120,7 +140,10 @@ Exception deleteArray( DynamicArray *array ) {
 
 }
 
-
+/// @brief adadptive resize function ensuring allocation for all possible future manipulations with array's elements
+/// @param array pointer to array
+/// @param directive enumerator giving context of resize call: extend for adding elements (if needed) and shrink for removing elements (if possible)
+/// @return status of execution depending on inner calls
 Exception resize( DynamicArray *array, const resizeType directive ) {
     elemPtr *buffer;
     
@@ -167,7 +190,6 @@ Exception resize( DynamicArray *array, const resizeType directive ) {
             if ( buffer == NULL ) {
                 return ARRAY_DATA_ALLOCATION_ERROR;
             } else {
-                printf( "%p\n", buffer );
                 array->capacity = array->capacity / 2 + 1;
                 memmove( buffer, array->head, array->typeInfo->getSize() * ( array->size + 1 ) );
                 array->begin = ( elemPtr * ) realloc( array->begin, array->capacity * array->typeInfo->getSize() );
@@ -202,8 +224,10 @@ Exception resize( DynamicArray *array, const resizeType directive ) {
     return SUCCESSFUL_EXECUTION;
 }
 
-
-
+/// @brief appending new element to the array
+/// @param array pointer to array where the element should be stored
+/// @param element pointer to new element
+/// @return status of execution depending on inner calls
 Exception append( DynamicArray *array, const elemPtr *element ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
@@ -229,7 +253,10 @@ Exception append( DynamicArray *array, const elemPtr *element ) {
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief appending new element to the array
+/// @param array pointer to array where the element should be stored
+/// @param element pointer to new element
+/// @return status of execution depending on inner calls
 Exception prepend( DynamicArray *array, const elemPtr *element ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
@@ -255,7 +282,11 @@ Exception prepend( DynamicArray *array, const elemPtr *element ) {
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief appending new element to the array
+/// @param array pointer to array where the element should be stored
+/// @param element pointer to new element
+/// @param index value of index at which new element should be stored
+/// @return status of execution depending on inner calls
 Exception pushIndex( DynamicArray *array, const elemPtr *element, const int index ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
@@ -284,7 +315,10 @@ Exception pushIndex( DynamicArray *array, const elemPtr *element, const int inde
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief function that copying arrays data by appending from one array to another (could be memmove but since we're storing char*, append() is a more reliable option
+/// @param destination pointer to target array to which we're copying
+/// @param source pointer to source array
+/// @return status of execution depending on inner calls
 Exception copyArray( DynamicArray *destination, const DynamicArray *source ) {
     elemPtr *sourceElem;
 
@@ -300,7 +334,11 @@ Exception copyArray( DynamicArray *destination, const DynamicArray *source ) {
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief function for arrays' concatenation consecutively copying data from given arrays to target
+/// @param result pointer to pointer to target array (for initialization)
+/// @param array1 pointer to first array
+/// @param array2 pointer to second array
+/// @return status of execution depending on inner calls
 Exception concatenate( DynamicArray **result, const DynamicArray *array1, const DynamicArray *array2 ) {
     if ( array1->typeInfo != array2->typeInfo ) {
         return ARRAYS_TYPEINFO_MISMATCH_ERROR;
@@ -323,7 +361,11 @@ Exception concatenate( DynamicArray **result, const DynamicArray *array1, const 
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief map(l, f) where l = [a1, a2, ... , an] is a set of elements of type <T> and f(): T -> T returns l' = [f(a1), f(a2), ... , f(an)] - applying some 
+/// @brief unary operator to every element of the array
+/// @param array - pointer to array ought to be mapped
+/// @param func - pointer to mapping function
+/// @return all unary operators are type-safe so we aint returning anything besides successful execution
 Exception map( DynamicArray *array, unaryOperator func ) {
     for ( short index = 0; index < array->size; index++ ) {
         elemPtr *elem = ( elemPtr * ) ( ( char * ) array->head + index * array->typeInfo->getSize() );
