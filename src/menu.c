@@ -11,7 +11,7 @@ Exception getArray( DynamicArray **array ) {
     Exception cmdStatus = cmdInput( &cmd, 1, getStorage()->count );
 
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
-        *array = getStorage()->arrayPtrs[cmd - 1];
+        *array = getStorage()->arrays[cmd - 1];
     } else {
         return cmdStatus;
     }
@@ -111,7 +111,7 @@ execMenu whereMenu() {
             break;
         }
 
-        printArrayContents( getStorage()->arrayPtrs[getStorage()->count - 1] );
+        printArrayContents( getStorage()->arrays[getStorage()->count - 1] );
 
     } else {
         printError( cmdStatus );
@@ -300,7 +300,7 @@ execMenu kboardInputMenu() {
 
     printKboardInputMenu();
     Exception cmdStatus = cmdInput( &cmd, 0, 3 );
-    Exception receiverStatus, initStatus, readStatus;
+    Exception status;
 
     if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
         
@@ -314,29 +314,28 @@ execMenu kboardInputMenu() {
 
             printStringIsSet();
 
-            receiverStatus = receiver( &input, &length, stdin );
-            if ( receiverStatus != SUCCESSFUL_EXECUTION ) {
-                printError( receiverStatus );
+            status = receiver( &input, &length, stdin );
+            if ( status != SUCCESSFUL_EXECUTION ) {
+                printError( status );
                 free( input );
                 break;
             }
 
-            initStatus = init( &array, getStringTI(), 2 );
-            if ( initStatus != SUCCESSFUL_EXECUTION ) {
-                printError( initStatus );
-                free( input );
-                deleteArray( array );
-                break;
-            }
-
-            readStatus = readFromInput(array, input, length);
-            if ( readStatus != SUCCESSFUL_EXECUTION ) {
-                printError( readStatus );
+            status = init( &array, getStringTI(), 2 );
+            if ( status != SUCCESSFUL_EXECUTION ) {
+                printError( status );
                 free( input );
                 deleteArray( array );
                 break;
             }
 
+            status = readFromInput(array, input, length);
+            if ( status != SUCCESSFUL_EXECUTION ) {
+                printError( status );
+                free( input );
+                deleteArray( array );
+                break;
+            }
             free( input );
 
             arrayManaging();
@@ -346,24 +345,24 @@ execMenu kboardInputMenu() {
         case 2:
 
             printDoubleIsSet();
-            receiverStatus = receiver( &input, &length, stdin );
-            if ( receiverStatus != SUCCESSFUL_EXECUTION ) {
-                printError( receiverStatus );
+            status = receiver( &input, &length, stdin );
+            if ( status != SUCCESSFUL_EXECUTION ) {
+                printError( status );
                 free( input );
                 break;
             }
 
-            initStatus = init( &array, getDoubleTI(), 2 );
-            if ( initStatus != SUCCESSFUL_EXECUTION ) {
-                printError( initStatus );
+            status = init( &array, getDoubleTI(), 2 );
+            if ( status != SUCCESSFUL_EXECUTION ) {
+                printError( status );
                 free( input );
                 deleteArray( array );
                 break;
             }
 
-            readStatus = readFromInput(array, input, length);
-            if ( readStatus != SUCCESSFUL_EXECUTION ) {
-                printError( readStatus );
+            status = readFromInput(array, input, length);
+            if ( status != SUCCESSFUL_EXECUTION ) {
+                printError( status );
                 free( input );
                 deleteArray( array );
                 break;
@@ -388,39 +387,36 @@ execMenu kboardInputMenu() {
 
 execMenu mainMenu() {
     int cmd;
-    menuDirective isStopSignal = USER_CONTINUE;
+    menuDirective directive = USER_CONTINUE;
 
-    while ( isStopSignal == USER_CONTINUE ) {
+    while ( directive == USER_CONTINUE ) {
         printMainMenu();
-        Exception cmdStatus = cmdInput( &cmd, 0, 3 );
-        if ( cmdStatus == SUCCESSFUL_EXECUTION ) {
-            switch ( cmd )
-            {
-            case 0:
-
-                deleteStorage( getStorage() );
-                printExit( USER_EXIT );
-                isStopSignal = USER_EXIT;
-                break;
-    
-            case 1:
-                
-                kboardInputMenu();
-                break;
-            
-            case 2:
-
-                arrayManaging();
-                break;
-            
-            default:
-    
-                break;
-            }
-        } else {
+        Exception cmdStatus = cmdInput( &cmd, 0, 2 );
+        if ( cmdStatus != SUCCESSFUL_EXECUTION ) {
             printError( cmdStatus );
-
             continue;
+        }
+        switch ( cmd )
+        {
+        case 0:
+
+            deleteStorage( getStorage() );
+            printExit();
+            directive = USER_EXIT;
+            break;
+
+        case 1:
+            
+            kboardInputMenu();
+            break;
+        
+        case 2:
+
+            arrayManaging();
+            break;
+        
+        default:
+            break;
         }
     }
 

@@ -11,7 +11,7 @@ size_t stringGetSize() {
 }
 
 
-Exception deleteString( elemPtr arg ) {
+Exception deleteString( ElemPtr arg ) {
 
     free( arg );
 
@@ -19,7 +19,7 @@ Exception deleteString( elemPtr arg ) {
 }
 
 
-Exception copyString( elemPtr *destination, const elemPtr source ) {
+Exception copyString( ElemPtr *destination, const ElemPtr source ) {
     if ( source == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
@@ -42,7 +42,7 @@ Exception copyString( elemPtr *destination, const elemPtr source ) {
 }
 
 
-ComparisonResult compareString( const elemPtr elem1, const elemPtr elem2 ) {
+ComparisonResult compareString( const ElemPtr elem1, const ElemPtr elem2 ) {
     int equalFlag = 1;
     int len1 = strlen( (char *) elem1 );
     int len2 = strlen( (char *) elem2 );
@@ -88,20 +88,20 @@ ComparisonResult compareString( const elemPtr elem1, const elemPtr elem2 ) {
 }
 
 
-void printString( const elemPtr output ) {
+void printString( const ElemPtr output ) {
 
     printf( "%s", ( char *) output );
 
 }
 
 
-Exception inputString( elemPtr *arg, const char *input ) {
+Exception inputString( ElemPtr *arg, const char *input ) {
 
-    return copyString( arg, ( elemPtr ) input );
+    return copyString( arg, ( ElemPtr ) input );
 }
 
 
-bool firstIsLower( const elemPtr arg ) {
+bool firstIsLower( const ElemPtr arg ) {
     unsigned asciiCode = ( unsigned ) *( ( char * ) arg );
 
     if ( asciiCode >= 'a' && asciiCode <= 'z' ) {
@@ -112,7 +112,7 @@ bool firstIsLower( const elemPtr arg ) {
 }
 
 
-bool isDigit( const elemPtr arg ) {
+bool isDigit( const ElemPtr arg ) {
     int len = strlen( ( char * ) arg );
     bool result = true;
 
@@ -127,7 +127,7 @@ bool isDigit( const elemPtr arg ) {
 }
 
 
-bool isUpperCase( const elemPtr arg ) {
+bool isUpperCase( const ElemPtr arg ) {
     int len = strlen( ( char * ) arg );
     bool result = true;
 
@@ -142,9 +142,9 @@ bool isUpperCase( const elemPtr arg ) {
 }
 
 
-Exception invertString( elemPtr arg ) {
+Exception invertString( ElemPtr arg ) {
     int len = strlen( (char *) arg );
-    elemPtr temp = malloc( len + 1 );
+    ElemPtr temp = malloc( len + 1 );
     if ( temp == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
@@ -160,7 +160,7 @@ Exception invertString( elemPtr arg ) {
 }
 
 
-Exception toLowerCase( elemPtr arg ) {
+Exception toLowerCase( ElemPtr arg ) {
     int len = strlen( (char *) arg );
 
     for ( short index = 0; index < len; index++ ) {
@@ -173,7 +173,7 @@ Exception toLowerCase( elemPtr arg ) {
 }
 
 
-Exception getFirstLiteral( elemPtr arg ) {
+Exception getFirstLiteral( ElemPtr arg ) {
     char *argStr = ( char * ) arg;
 
     argStr = realloc( argStr, 2 );
@@ -187,21 +187,21 @@ Exception getFirstLiteral( elemPtr arg ) {
 }
 
 
-elemPtr maxString( const elemPtr arg1, const elemPtr arg2 ) {
-    elemPtr result = ( compareString( arg1, arg2 ) == LESS ) ? arg2 : arg1;
+ElemPtr maxString( const ElemPtr arg1, const ElemPtr arg2 ) {
+    ElemPtr result = ( compareString( arg1, arg2 ) == LESS ) ? arg2 : arg1;
 
     return result;
 }
 
 
-elemPtr minString( const elemPtr arg1, const elemPtr arg2 ) {
-    elemPtr result = ( compareString( arg1, arg2 ) == LESS ) ? arg1 : arg2;
+ElemPtr minString( const ElemPtr arg1, const ElemPtr arg2 ) {
+    ElemPtr result = ( compareString( arg1, arg2 ) == LESS ) ? arg1 : arg2;
 
     return result;
 }
 
-Exception swapString( elemPtr *elem1, elemPtr *elem2 ) {
-    elemPtr temp;
+Exception swapString( ElemPtr *elem1, ElemPtr *elem2 ) {
+    ElemPtr temp;
     temp = *elem1;
     *elem1 = *elem2;
     *elem2 = temp;
@@ -211,8 +211,6 @@ Exception swapString( elemPtr *elem1, elemPtr *elem2 ) {
 
 
 static TypeInfo *stringTypeInfo = NULL;
-static Exception ( *stringMapSet[3] )( elemPtr ) = { invertString, toLowerCase, getFirstLiteral };
-static bool ( *stringWhereSet[3] )( elemPtr ) = { firstIsLower, isDigit, isUpperCase };
 
 
 const TypeInfo *getStringTI() {
@@ -236,13 +234,13 @@ const TypeInfo *getStringTI() {
 
         stringTypeInfo->print = printString;
 
-        stringTypeInfo->setForMap[0] = stringMapSet[0];
-        stringTypeInfo->setForMap[1] = stringMapSet[1];
-        stringTypeInfo->setForMap[2] = stringMapSet[2];
+        stringTypeInfo->setForMap[0] = invertString;
+        stringTypeInfo->setForMap[1] = toLowerCase;
+        stringTypeInfo->setForMap[2] = getFirstLiteral;
 
-        stringTypeInfo->setForWhere[0] = stringWhereSet[0];
-        stringTypeInfo->setForWhere[1] = stringWhereSet[1];
-        stringTypeInfo->setForWhere[2] = stringWhereSet[2];
+        stringTypeInfo->setForWhere[0] = firstIsLower;
+        stringTypeInfo->setForWhere[1] = isDigit;
+        stringTypeInfo->setForWhere[2] = isUpperCase;
     }
     return stringTypeInfo;    
 }

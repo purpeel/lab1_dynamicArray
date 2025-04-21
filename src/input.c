@@ -8,6 +8,40 @@ const unsigned MAX_SIZE = 1024 * 1024;
 const unsigned CHUNK_SIZE = 128;
 
 
+Exception charToInt( const char *source, int *value ) {
+    int len = 0;
+    
+    for ( short index = 0; *( source + index ) != '\0' || *( source + index ) != '\n'; index++ ) {
+        int asciiCode = ( int ) *( source + index );
+        
+        if ( asciiCode == '\0' || asciiCode == '\n' ) { 
+            break;
+        } else {
+            len++;
+        }
+    }
+
+    if ( len == 0 ) {
+        return ZERO_LENGTH_INPUT_ERROR;
+    }
+
+    for ( short index = 0; *( source + index ) != '\0' || *( source + index ) != '\n'; index++ ) {
+        int asciiCode = ( int ) *( source + index );
+        if ( asciiCode == '\0' || asciiCode == '\n' ) { 
+            break;
+        }
+
+        if ( asciiCode < '0' || asciiCode > '9' ) {
+            return UNEXPECTED_CHAR_ERROR;
+        } else {
+            *value += ( asciiCode - '0') * power( 10, len - index - 1);
+        }
+    }
+
+    return SUCCESSFUL_EXECUTION;
+}
+
+
 Exception receiver( char **buffer, int *length, FILE *stream ) {
     *buffer = malloc( CHUNK_SIZE );
 

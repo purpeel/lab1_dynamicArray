@@ -2,20 +2,6 @@
 #define H_UTILITIES
 
 
-typedef enum _comparisonResult {
-    GREATER = -1,
-    EQUAL = 0,
-    LESS = 1
-} ComparisonResult;
-
-
-typedef enum {
-    USER_EXIT,
-    SYSTEM_EXIT,
-    USER_CONTINUE
-} menuDirective;
-
-
 typedef enum execStatus {
     SUCCESSFUL_EXECUTION = 0,
     MEMORY_ALLOCATION_ERROR = 1,
@@ -24,7 +10,10 @@ typedef enum execStatus {
     ARRAYS_TYPEINFO_MISMATCH_ERROR = 4,
     TOO_FEW_ARRAYS_ERROR = 5,
     NULL_TYPEINFO_ERROR = 6,
-    UNEXPECTED_ALPHA_ERROR = 9,
+    INVALID_SIZEDIFF_ERROR = 7,
+    INVALID_INDEX_ERROR = 8,
+    UNEXPECTED_CHAR_ERROR = 9,
+    EMPTY_ARRAY_ERROR = 10,
     CMD_OUT_OF_CONTEXT_ERROR = 12,
     ZERO_LENGTH_INPUT_ERROR = 14,
     DOUBLE_INPUT_ERROR = 15,
@@ -32,8 +21,7 @@ typedef enum execStatus {
 } Exception;
 
 
-Exception charToInt( const char*, int * );
-Exception charToDouble( const char*, double *);
+double power( const double, int );
 
 
 #endif

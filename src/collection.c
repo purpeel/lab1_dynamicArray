@@ -15,7 +15,7 @@ ArrayStorage *getStorage() {
             return NULL;
         }
         storage->count = 0;
-        storage->arrayPtrs = NULL;
+        storage->arrays = NULL;
     }
     return storage;
 }
@@ -24,18 +24,19 @@ ArrayStorage *getStorage() {
 /// @param storage current pointer to global storage
 /// @return status of execution depending on inner calls
 Exception deleteStorage( ArrayStorage *storage ) {
+    Exception status;
+    
     if ( storage->count == 0 ) {
-        free( storage->arrayPtrs );
-        free( storage );
+        storage->arrays = NULL;
         return SUCCESSFUL_EXECUTION;
     }
     for ( short index = 0; index < storage->count; index++ ) {
-        Exception removalStatus = removeArrayFromStorage( storage->arrayPtrs[index], storage );
-        if ( removalStatus != SUCCESSFUL_EXECUTION ) {
-            return removalStatus;
+        status = removeArrayFromStorage( storage->arrays[index], storage );
+        if ( status != SUCCESSFUL_EXECUTION ) {
+            return status;
         }
     }
-    free( storage );
+    // free( storage );
     return SUCCESSFUL_EXECUTION;
 }
 
@@ -46,20 +47,20 @@ Exception deleteStorage( ArrayStorage *storage ) {
 Exception removeArrayFromStorage( DynamicArray *array, ArrayStorage *storage ) {
     DynamicArray *temp;
     for ( short index = 0; index < storage->count - 1; index++ ) {
-        if ( storage->arrayPtrs[index] == array ) {
-            temp = storage->arrayPtrs[index + 1];
-            storage->arrayPtrs[index + 1] = storage->arrayPtrs[index];
-            storage->arrayPtrs[index] = temp;
+        if ( storage->arrays[index] == array ) {
+            temp = storage->arrays[index + 1];
+            storage->arrays[index + 1] = storage->arrays[index];
+            storage->arrays[index] = temp;
         }
     }
     storage->count--;
     if ( storage->count == 0 ) {
-        free(storage->arrayPtrs);
-        storage->arrayPtrs = NULL;
+        free(storage->arrays);
+        storage->arrays = NULL;
         return SUCCESSFUL_EXECUTION;
     } else {
-        storage->arrayPtrs = realloc( storage->arrayPtrs, storage->count * sizeof( DynamicArray * ) );
-        if ( storage->arrayPtrs == NULL ) {
+        storage->arrays = realloc( storage->arrays, storage->count * sizeof( DynamicArray * ) );
+        if ( storage->arrays == NULL ) {
             return MEMORY_ALLOCATION_ERROR;
         }
     }
@@ -72,12 +73,12 @@ Exception removeArrayFromStorage( DynamicArray *array, ArrayStorage *storage ) {
 /// @return status of execution depending on inner calls
 Exception addArrayToStorage( DynamicArray *array, ArrayStorage *storage ) {
     storage->count++;
-    storage->arrayPtrs = realloc( storage->arrayPtrs, storage->count * sizeof( DynamicArray * ) );
-    if ( storage->arrayPtrs == NULL ) {
+    storage->arrays = realloc( storage->arrays, storage->count * sizeof( DynamicArray * ) );
+    if ( storage->arrays == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
     
-    storage->arrayPtrs[storage->count - 1] = array;
+    storage->arrays[storage->count - 1] = array;
     return SUCCESSFUL_EXECUTION;
 }
 
@@ -90,29 +91,30 @@ Exception init( DynamicArray **array, const TypeInfo *TI, const int initialCapac
     ( *array ) = malloc( sizeof( DynamicArray ) );
     if ( ( *array ) == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
-    }
-
-    if ( TI == NULL ) {
+    } if ( TI == NULL ) {
         return NULL_TYPEINFO_ERROR;
     }    
     ( *array )->typeInfo = TI;
-    
-    ( *array )->capacity = abs( initialCapacity );
+
+    ( *array )->capacity = initialCapacity > 2 ? initialCapacity : 2;
     ( *array )->size = 0;
-    
-    ( *array )->begin = malloc( ( *array )->typeInfo->getSize() * ( *array )->capacity );
-    if ( ( *array )->begin == NULL ) {
+    ( *array )->beginOfReserved = malloc( ( *array )->typeInfo->getSize() * ( *array )->capacity );
+    if ( ( *array )->beginOfReserved == NULL ) {
         free( ( *array ) );
         return ARRAY_DATA_ALLOCATION_ERROR;
     }
-    
-    ( *array )->head = ( elemPtr * ) ( ( char * ) ( *array )->begin + ( *array )->typeInfo->getSize() );
-    ( *array )->tail = ( elemPtr * ) ( ( char * ) ( *array )->begin + ( *array )->capacity * ( *array )->typeInfo->getSize() );
-    
+
+    ( *array )->data = ( ElemPtr * ) ( (char *) (*array)->beginOfReserved + ((*array)->capacity / 4 + 1 ) * (*array)->typeInfo->getSize() );
+    ( *array )->endOfReserved = ( ElemPtr * ) ( (char *) (*array)->beginOfReserved +     (*array)->capacity        * (*array)->typeInfo->getSize() );
+
     Exception storingStatus = addArrayToStorage( *array, getStorage() );
+
     if ( storingStatus != SUCCESSFUL_EXECUTION ) {
+        free( ( *array )->beginOfReserved );
+        free( *array );
         return storingStatus;
     }
+
     return SUCCESSFUL_EXECUTION;
 }
 
@@ -123,18 +125,17 @@ Exception deleteArray( DynamicArray *array ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
-    
+
     if ( array->size > 0 ) {
         for ( int index = 0; index < array->size; index++ ) {
-            array->typeInfo->destruct( ( char * ) array->begin + index * array->typeInfo->getSize() );
+            array->typeInfo->destruct( ( ElemPtr ) ( ( char * ) array->beginOfReserved + index * array->typeInfo->getSize() ) );
         }
     }
 
     if ( removeArrayFromStorage( array, getStorage() ) != SUCCESSFUL_EXECUTION ) {
+
         return MEMORY_ALLOCATION_ERROR;
     }
-
-    free( array );
 
     return SUCCESSFUL_EXECUTION;
 
@@ -144,82 +145,85 @@ Exception deleteArray( DynamicArray *array ) {
 /// @param array pointer to array
 /// @param directive enumerator giving context of resize call: extend for adding elements (if needed) and shrink for removing elements (if possible)
 /// @return status of execution depending on inner calls
-Exception resize( DynamicArray *array, const resizeType directive ) {
-    elemPtr *buffer;
-    
-    switch ( directive )  
-    {
-        case EXTEND:
-        if ( array->size >= ( array->capacity * 0.75 ) && array->capacity < 10000 ) {
-            buffer = ( elemPtr *) malloc( ( array->size - 1 ) * array->typeInfo->getSize() );
-            if ( buffer == NULL ) {
-                return ARRAY_DATA_ALLOCATION_ERROR;
-            } else {
-                array->capacity = array->capacity * 2 + 1;
-                memmove( buffer, array->head, array->typeInfo->getSize() * ( array->size - 1 ) );
-                array->begin = ( elemPtr * ) realloc( array->begin, array->capacity * array->typeInfo->getSize() );
-                if ( array->begin == NULL ) {
-                    free( buffer );
-                    return ARRAY_DATA_ALLOCATION_ERROR;
-                }
-                array->head = ( elemPtr * ) ( ( char * ) array->begin + ( 1 + array->capacity / 4 ) * array->typeInfo->getSize() );
-                array->tail = ( elemPtr * ) ( ( char * ) array->begin +       array->capacity       * array->typeInfo->getSize() );
-                memmove( array->head, buffer, array->typeInfo->getSize() * ( array->size - 1 ) );
-            }
-        } else if ( array->size > ( array->capacity * 0.25 ) && array->capacity > 10000 ) {
-            buffer = ( elemPtr * ) malloc( ( array->size - 1 ) * array->typeInfo->getSize() );
-            if ( buffer == NULL ) {
-                return ARRAY_DATA_ALLOCATION_ERROR;
-            } else {
-                array->capacity += 1000;
-                memmove( buffer, array->head, array->typeInfo->getSize() * ( array->size - 1 ) );
-                array->begin = ( elemPtr * ) realloc( array->begin, array->capacity * array->typeInfo->getSize() );
-                if ( array->begin == NULL ) {
-                    free( buffer );
-                    return ARRAY_DATA_ALLOCATION_ERROR;
-                }
-                array->head = ( elemPtr * ) ( ( char * ) array->begin +      500        * array->typeInfo->getSize() );
-                array->tail = ( elemPtr * ) ( ( char * ) array->begin + array->capacity * array->typeInfo->getSize() );
-                memmove( array->head, buffer, array->typeInfo->getSize() * ( array->size - 1 ) );
-            }
+
+Exception extend( DynamicArray *array, const int sizeDiff ) {
+    if ( array->beginOfReserved == NULL ) {
+        return ARRAY_DATA_ALLOCATION_ERROR;
+    } 
+    array->size += sizeDiff;
+    ElemPtr *buffer = NULL;
+
+    if ( array->size >= ( array->capacity * 0.75 ) && array->capacity < 10000 ) {
+        buffer = ( ElemPtr *) malloc( ( array->size - sizeDiff ) * array->typeInfo->getSize() );
+        if ( buffer == NULL ) {
+            return ARRAY_DATA_ALLOCATION_ERROR;
         }
-        break;
-    case SHRINK:
-        if ( array->size < ( array->capacity * 0.25 ) && array->capacity < 10000 ) {
-            buffer = ( elemPtr * ) malloc( ( array->size + 1 ) * array->typeInfo->getSize() );
-            if ( buffer == NULL ) {
-                return ARRAY_DATA_ALLOCATION_ERROR;
-            } else {
-                array->capacity = array->capacity / 2 + 1;
-                memmove( buffer, array->head, array->typeInfo->getSize() * ( array->size + 1 ) );
-                array->begin = ( elemPtr * ) realloc( array->begin, array->capacity * array->typeInfo->getSize() );
-                if ( array->begin == NULL ) {
-                    free( buffer );
-                    return ARRAY_DATA_ALLOCATION_ERROR;
-                }
-                array->head = ( elemPtr * ) ( ( char * ) array->begin + ( 1 + array->capacity / 8 ) * array->typeInfo->getSize() );
-                array->tail = ( elemPtr * ) ( ( char * ) array->begin +       array->capacity       * array->typeInfo->getSize() );
-                memmove( array->head, buffer, array->typeInfo->getSize() * ( array->size + 1 ) );
-            }
-        } else if ( array->size < ( array->capacity * 0.75 ) && array->capacity > 10000 ) {
-            buffer = ( elemPtr * ) malloc( ( array->size + 1 ) * array->typeInfo->getSize() );
-            if ( buffer == NULL ) {
-                return ARRAY_DATA_ALLOCATION_ERROR;
-            } else {
-                array->capacity -= 1000;
-                memmove( buffer, array->head, array->typeInfo->getSize() * ( array->size + 1 ) );
-                array->begin = ( elemPtr * ) realloc( array->begin, array->capacity * array->typeInfo->getSize() );
-                if ( array->begin == NULL ) {
-                    free( buffer );
-                    return ARRAY_DATA_ALLOCATION_ERROR;
-                }
-                array->head = ( elemPtr * ) ( ( char * ) array->begin +       500       * array->typeInfo->getSize() );
-                array->tail = ( elemPtr * ) ( ( char * ) array->begin + array->capacity * array->typeInfo->getSize() );
-                memmove( array->head, buffer, array->typeInfo->getSize() * ( array->size + 1 ) );
-            }
+        memmove( buffer, array->data, array->typeInfo->getSize() * ( array->size - sizeDiff ) );
+        array->capacity = array->capacity * 2 + 1;
+        array->beginOfReserved = ( ElemPtr * ) realloc( array->beginOfReserved, array->capacity * array->typeInfo->getSize() );
+        if ( array->beginOfReserved == NULL ) {
+            free( buffer );
+            return ARRAY_DATA_ALLOCATION_ERROR;
         }
-        break;
+        array->data = ( ElemPtr * ) ( ( char * ) array->beginOfReserved + ( 1 + array->capacity / 4 ) * array->typeInfo->getSize() );
+        memmove( array->data, buffer, array->typeInfo->getSize() * ( array->size - sizeDiff ) );
+    } else if ( array->size > ( array->capacity * 0.25 ) && array->capacity > 10000 ) {
+        array->capacity += 1000;
+        array->beginOfReserved = ( ElemPtr * ) realloc( array->beginOfReserved, array->capacity * array->typeInfo->getSize() );
+        if ( array->beginOfReserved == NULL ) {
+            free( buffer );
+            return ARRAY_DATA_ALLOCATION_ERROR;
+        }
+        array->data = ( ElemPtr * ) ( ( char * ) array->beginOfReserved +      500        * array->typeInfo->getSize() );
+        memmove( array->data, buffer, array->typeInfo->getSize() * ( array->size - sizeDiff ) );
     }
+    array->endOfReserved = ( ElemPtr * ) ( ( char * ) array->beginOfReserved + array->capacity * array->typeInfo->getSize() );
+    free( buffer );
+
+    return SUCCESSFUL_EXECUTION;
+}
+
+
+Exception shrink( DynamicArray *array, const int sizeDiff ) {
+    if ( array->beginOfReserved == NULL ) {
+        return ARRAY_DATA_ALLOCATION_ERROR;
+    } 
+    if ( sizeDiff > array->size ) {
+        return INVALID_SIZEDIFF_ERROR;  
+    }    
+    array->size -= sizeDiff;
+    ElemPtr *buffer = NULL;
+    if ( array->size < ( array->capacity * 0.25 ) && array->capacity < 10000 ) {
+        buffer = ( ElemPtr *) malloc( ( array->size + sizeDiff ) * array->typeInfo->getSize() );
+        if ( buffer == NULL ) {
+            return ARRAY_DATA_ALLOCATION_ERROR;
+        }
+        memmove( buffer, array->data, array->typeInfo->getSize() * ( array->size + sizeDiff ) );
+        array->capacity = array->capacity / 2 + 1;
+        array->beginOfReserved = ( ElemPtr * ) realloc( array->beginOfReserved, array->capacity * array->typeInfo->getSize() );
+        if ( array->beginOfReserved == NULL ) {
+            free( buffer );
+            return ARRAY_DATA_ALLOCATION_ERROR;
+        }
+        array->data = ( ElemPtr * ) ( ( char * ) array->beginOfReserved + ( 1 + array->capacity / 8 ) * array->typeInfo->getSize() );
+        memmove( array->data, buffer, array->typeInfo->getSize() * ( array->size + sizeDiff ) );
+    } else if ( array->size < ( array->capacity * 0.75 ) && array->capacity > 10000 ) {
+        buffer = ( ElemPtr *) malloc( ( array->size + sizeDiff ) * array->typeInfo->getSize() );
+        if ( buffer == NULL ) {
+            return ARRAY_DATA_ALLOCATION_ERROR;
+        }
+        memmove( buffer, array->data, array->typeInfo->getSize() * ( array->size + sizeDiff ) );
+        array->capacity -= 1000;
+        array->beginOfReserved = ( ElemPtr * ) realloc( array->beginOfReserved, array->capacity * array->typeInfo->getSize() );
+        if ( array->beginOfReserved == NULL ) {
+            free( buffer );
+            return ARRAY_DATA_ALLOCATION_ERROR;
+        }
+        array->data = ( ElemPtr * ) ( ( char * ) array->beginOfReserved +       500       * array->typeInfo->getSize() );
+        memmove( array->data, buffer, array->typeInfo->getSize() * ( array->size + sizeDiff ) );
+    }
+    array->endOfReserved = ( ElemPtr * ) ( ( char * ) array->beginOfReserved +       array->capacity       * array->typeInfo->getSize() );
+    free( buffer );
 
     return SUCCESSFUL_EXECUTION;
 }
@@ -228,26 +232,26 @@ Exception resize( DynamicArray *array, const resizeType directive ) {
 /// @param array pointer to array where the element should be stored
 /// @param element pointer to new element
 /// @return status of execution depending on inner calls
-Exception append( DynamicArray *array, const elemPtr *element ) {
+Exception append( DynamicArray *array, const ElemPtr *element ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
 
-    array->size++;
+    Exception extendStatus = extend( array, 1 );
 
-    if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {
-        if ( array->head == NULL ) {
+    if ( extendStatus == SUCCESSFUL_EXECUTION ) {
+        if ( array->data == NULL ) {
             return MEMORY_ALLOCATION_ERROR;
         }
 
-        elemPtr *placing = ( elemPtr * ) ( ( char * ) array->head + ( array->size - 1 ) * array->typeInfo->getSize() );
+        ElemPtr *placing = ( ElemPtr * ) ( ( char * ) array->data + ( array->size - 1 ) * array->typeInfo->getSize() );
         Exception assigningStatus = array->typeInfo->assign( placing, *element );
         if ( assigningStatus != SUCCESSFUL_EXECUTION ) {
             return assigningStatus;
         }
 
     } else { 
-        return ARRAY_DATA_ALLOCATION_ERROR;
+        return extendStatus;
     }
 
     return SUCCESSFUL_EXECUTION;
@@ -257,19 +261,18 @@ Exception append( DynamicArray *array, const elemPtr *element ) {
 /// @param array pointer to array where the element should be stored
 /// @param element pointer to new element
 /// @return status of execution depending on inner calls
-Exception prepend( DynamicArray *array, const elemPtr *element ) {
+Exception prepend( DynamicArray *array, const ElemPtr *element ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
-    array->size++;
 
-    if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {
-        if ( array->head == NULL ) {
+    if ( extend( array, 1 ) == SUCCESSFUL_EXECUTION ) {
+        if ( array->data == NULL ) {
             return MEMORY_ALLOCATION_ERROR;
         }
-        array->head = ( elemPtr * ) ( ( char * ) array->head - array->typeInfo->getSize() );
+        array->data = ( ElemPtr * ) ( ( char * ) array->data - array->typeInfo->getSize() );
 
-        elemPtr *placing = array->head;
+        ElemPtr *placing = array->data;
         Exception assigningStatus = array->typeInfo->assign( placing, *element );
         if ( assigningStatus != SUCCESSFUL_EXECUTION ) {
             return assigningStatus;
@@ -287,20 +290,23 @@ Exception prepend( DynamicArray *array, const elemPtr *element ) {
 /// @param element pointer to new element
 /// @param index value of index at which new element should be stored
 /// @return status of execution depending on inner calls
-Exception pushIndex( DynamicArray *array, const elemPtr *element, const int index ) {
+Exception insertAt( DynamicArray *array, const ElemPtr *element, const int index ) {
     if ( array == NULL ) {
         return MEMORY_ALLOCATION_ERROR;
     }
-    array->size++;
 
-    if ( resize( array, EXTEND ) == SUCCESSFUL_EXECUTION ) {
-        if ( array->head == NULL ) {
+    if ( index < 0 || index > array->size ) {
+        return INVALID_INDEX_ERROR;
+    }
+    
+    if ( extend(array, 1) == SUCCESSFUL_EXECUTION ) {
+        if ( array->data == NULL ) {
             return MEMORY_ALLOCATION_ERROR;
         }
-        array->tail = ( elemPtr * ) ( ( char * ) array->head + array->size * array->typeInfo->getSize() );
+        array->endOfReserved = ( ElemPtr * ) ( ( char * ) array->data + array->size * array->typeInfo->getSize() );
 
 
-        elemPtr *placing = ( elemPtr * ) ( ( char * ) array->head + index * array->typeInfo->getSize() );
+        ElemPtr *placing = ( ElemPtr * ) ( ( char * ) array->data + index * array->typeInfo->getSize() );
         memmove( placing + array->typeInfo->getSize(), placing, array->size - index + 1 );
         Exception assigningStatus = array->typeInfo->assign( placing, *element );
         if ( assigningStatus != SUCCESSFUL_EXECUTION ) {
@@ -315,15 +321,47 @@ Exception pushIndex( DynamicArray *array, const elemPtr *element, const int inde
     return SUCCESSFUL_EXECUTION;
 }
 
+/// @brief function for getting an element from the array by index
+/// @param array pointer to the array
+/// @param index 
+/// @param destination pointer to where the extracted element should be stored
+/// @return status of execution depending on inner calls
+Exception getElem( DynamicArray *array, const int index, ElemPtr *destination ) {
+    if ( array == NULL || destination == NULL ) {
+        return MEMORY_ALLOCATION_ERROR;
+    }
+
+    if ( array->size == 0 )  {
+        return EMPTY_ARRAY_ERROR;
+    }
+
+    if ( index < 0 || index >= array->size ) {
+        return INVALID_INDEX_ERROR;
+    }
+
+    ElemPtr *elem = ( ElemPtr * ) ( ( char * ) array->data + index * array->typeInfo->getSize() );
+    Exception assigningStatus = array->typeInfo->assign( destination, *elem );
+    if ( assigningStatus != SUCCESSFUL_EXECUTION ) {
+        return assigningStatus;
+    }
+
+    return SUCCESSFUL_EXECUTION;
+
+}
+
+
 /// @brief function that copying arrays data by appending from one array to another (could be memmove but since we're storing char*, append() is a more reliable option
 /// @param destination pointer to target array to which we're copying
 /// @param source pointer to source array
 /// @return status of execution depending on inner calls
 Exception copyArray( DynamicArray *destination, const DynamicArray *source ) {
-    elemPtr *sourceElem;
+    if ( destination->typeInfo != source->typeInfo ) {
+        return ARRAYS_TYPEINFO_MISMATCH_ERROR;
+    }
+    ElemPtr *sourceElem;
 
     for ( short index = 0; index < source->size; index++ ) {
-        sourceElem = ( elemPtr * ) ( ( char * ) source->head + index * source->typeInfo->getSize() );
+        sourceElem = ( ElemPtr * ) ( ( char * ) source->data + index * source->typeInfo->getSize() );
         
         Exception appendStatus = append( destination, sourceElem );
         if ( appendStatus != SUCCESSFUL_EXECUTION ) {
@@ -351,10 +389,12 @@ Exception concatenate( DynamicArray **result, const DynamicArray *array1, const 
     
     Exception copyStatus = copyArray( *result, array1 );    
     if ( copyStatus != SUCCESSFUL_EXECUTION ) {
+        deleteArray( *result );
         return copyStatus;
     }
     copyStatus = copyArray( *result, array2 );
     if ( copyStatus != SUCCESSFUL_EXECUTION ) {
+        deleteArray( *result );
         return copyStatus;
     }
 
@@ -366,16 +406,20 @@ Exception concatenate( DynamicArray **result, const DynamicArray *array1, const 
 /// @param array - pointer to array ought to be mapped
 /// @param func - pointer to mapping function
 /// @return all unary operators are type-safe so we aint returning anything besides successful execution
-Exception map( DynamicArray *array, unaryOperator func ) {
+Exception map( DynamicArray *array, unaryTransform func ) {
     for ( short index = 0; index < array->size; index++ ) {
-        elemPtr *elem = ( elemPtr * ) ( ( char * ) array->head + index * array->typeInfo->getSize() );
+        ElemPtr *elem = ( ElemPtr * ) ( ( char * ) array->data + index * array->typeInfo->getSize() );
         func( *elem );
     }
     
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief where(l, f) where l = [a1, a2, ... , an] is a set of elements of type <T> and p() is an unary predicate returns l' = [ai, aj, ... , ak],
+/// @brief and l' consists of elements which, when substituted into the predicate return True. new array is automatically added to the storage
+/// @param array 
+/// @param func 
+/// @return status of execution depending on inner calls
 Exception where( DynamicArray *array, predicate func ) {
     DynamicArray *result = NULL;
 
@@ -385,7 +429,7 @@ Exception where( DynamicArray *array, predicate func ) {
     }
 
     for ( short index = 0; index < array->size; index++ ) {
-        elemPtr *elem = ( elemPtr * ) ( ( char * ) array->head + index * array->typeInfo->getSize() );
+        ElemPtr *elem = ( ElemPtr * ) ( ( char * ) array->data + index * array->typeInfo->getSize() );
         if ( func( *elem ) ) {
             Exception appendStatus = append( result, elem );
             if ( appendStatus != SUCCESSFUL_EXECUTION ) {
@@ -397,11 +441,15 @@ Exception where( DynamicArray *array, predicate func ) {
     return SUCCESSFUL_EXECUTION;
 }
 
-
+/// @brief function splitting user input by spaces and consecutively appending provivded elements to the array
+/// @param array pointer to the array ought to be filled
+/// @param input string of user input
+/// @param length length of user input
+/// @return status of execution depending on inner calls
 Exception readFromInput( DynamicArray *array, const char *input, const int length ) {
     char *buffer = NULL;
     int prevIsSpace = 1, bufferLength = 0, resBufferLength = 0, bufferRecordedCount = 0, readElementsCount = 0, isInQuotes = 0;
-    elemPtr *newElem;
+    ElemPtr *newElem = ( ElemPtr * ) malloc( array->typeInfo->getSize() );
 
     for ( short index = 0; index < length; index++ ) {
 
@@ -409,7 +457,6 @@ Exception readFromInput( DynamicArray *array, const char *input, const int lengt
             if ( prevIsSpace == 0 && readElementsCount != 0 ) {
                 *( buffer + resBufferLength ) = '\0';
 
-                newElem = malloc( array->typeInfo->getSize() );
                 Exception inputStatus = array->typeInfo->input( newElem, buffer ); 
                 if ( inputStatus != SUCCESSFUL_EXECUTION ) {
                     free( newElem );
@@ -423,7 +470,6 @@ Exception readFromInput( DynamicArray *array, const char *input, const int lengt
                     return appendStatus;
                 }
 
-                free( newElem );
                 free( buffer );
 
                 bufferLength = 0;
@@ -476,9 +522,9 @@ Exception readFromInput( DynamicArray *array, const char *input, const int lengt
             bufferLength--;
         }
     }
-    if ( buffer ) {
-        free( buffer );
-    }
+
+    free( buffer );
+    free( newElem );
 
     return SUCCESSFUL_EXECUTION;
 }

@@ -1,7 +1,6 @@
 #ifndef UI_H
 #define UI_H
 
-
 #include "util.h"
 #include "collection.h"
 
@@ -12,7 +11,7 @@ typedef void printData;
 
 
 printMessage printError( const Exception );
-printMessage printExit( const menuDirective );
+printMessage printExit();
 printMessage printKboardInputMenu();
 printMessage printDoubleIsSet();
 

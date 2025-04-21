@@ -6,11 +6,11 @@ extern "C" {
 class DoubleTypeInfoTest : public ::testing::Test {
     protected:
         double *testValue;
-        elemPtr testPtr;
+        ElemPtr testPtr;
     
         void SetUp() override {
             testValue = new double(0.0);
-            testPtr = (elemPtr)testValue;
+            testPtr = (ElemPtr)testValue;
         }
     
         void TearDown() override {
@@ -27,7 +27,7 @@ class DoubleTypeInfoTest : public ::testing::Test {
     // Test deleteDouble()
     TEST_F(DoubleTypeInfoTest, DeleteDouble) {
         double* value = new double(5.0);
-        Exception result = getDoubleTI()->destruct((elemPtr)value);
+        Exception result = getDoubleTI()->destruct((ElemPtr)value);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
     }
     
@@ -35,8 +35,8 @@ class DoubleTypeInfoTest : public ::testing::Test {
     TEST_F(DoubleTypeInfoTest, AssignDouble) {
         double sourceVal = 3.14;
         double* destVal = nullptr;
-        elemPtr source = (elemPtr)&sourceVal;
-        elemPtr *dest = (elemPtr *)&destVal;
+        ElemPtr source = (ElemPtr)&sourceVal;
+        ElemPtr *dest = (ElemPtr *)&destVal;
     
         Exception result = getDoubleTI()->assign(dest, source);
         
@@ -53,23 +53,23 @@ class DoubleTypeInfoTest : public ::testing::Test {
         double val2 = 2.71;
         double val3 = 3.14;
     
-        EXPECT_EQ(getDoubleTI()->compare((elemPtr)&val1, (elemPtr)&val2), GREATER);
-        EXPECT_EQ(getDoubleTI()->compare((elemPtr)&val2, (elemPtr)&val1), LESS);
-        EXPECT_EQ(getDoubleTI()->compare((elemPtr)&val1, (elemPtr)&val3), EQUAL);
+        EXPECT_EQ(getDoubleTI()->compare((ElemPtr)&val1, (ElemPtr)&val2), GREATER);
+        EXPECT_EQ(getDoubleTI()->compare((ElemPtr)&val2, (ElemPtr)&val1), LESS);
+        EXPECT_EQ(getDoubleTI()->compare((ElemPtr)&val1, (ElemPtr)&val3), EQUAL);
     }
     
     // Test printDouble()
     TEST_F(DoubleTypeInfoTest, PrintDouble) {
         double value = 3.14159;
         testing::internal::CaptureStdout();
-        getDoubleTI()->print((elemPtr)&value);
+        getDoubleTI()->print((ElemPtr)&value);
         std::string output = testing::internal::GetCapturedStdout();
         EXPECT_EQ(output, "3.141590");
     }
     
     // Test inputDouble()
     TEST_F(DoubleTypeInfoTest, InputDouble) {
-        elemPtr result = nullptr;
+        ElemPtr result = nullptr;
         const char* input = "3.14";
         
         Exception status = getDoubleTI()->input(&result, input);
@@ -86,9 +86,9 @@ class DoubleTypeInfoTest : public ::testing::Test {
         double nonNormalizedValue = 1.5;
         double negativeValue = -0.5;
     
-        EXPECT_TRUE(getDoubleTI()->setForWhere[0]((elemPtr)&normalizedValue));
-        EXPECT_FALSE(getDoubleTI()->setForWhere[0]((elemPtr)&nonNormalizedValue));
-        EXPECT_TRUE(getDoubleTI()->setForWhere[0]((elemPtr)&negativeValue));
+        EXPECT_TRUE(getDoubleTI()->setForWhere[0]((ElemPtr)&normalizedValue));
+        EXPECT_FALSE(getDoubleTI()->setForWhere[0]((ElemPtr)&nonNormalizedValue));
+        EXPECT_TRUE(getDoubleTI()->setForWhere[0]((ElemPtr)&negativeValue));
     }
     
     // Test isRound()
@@ -97,9 +97,9 @@ class DoubleTypeInfoTest : public ::testing::Test {
         double nonRoundValue = 5.5;
         double negativeRoundValue = -3.0;
     
-        EXPECT_TRUE(getDoubleTI()->setForWhere[1]((elemPtr)&roundValue));
-        EXPECT_FALSE(getDoubleTI()->setForWhere[1]((elemPtr)&nonRoundValue));
-        EXPECT_TRUE(getDoubleTI()->setForWhere[1]((elemPtr)&negativeRoundValue));
+        EXPECT_TRUE(getDoubleTI()->setForWhere[1]((ElemPtr)&roundValue));
+        EXPECT_FALSE(getDoubleTI()->setForWhere[1]((ElemPtr)&nonRoundValue));
+        EXPECT_TRUE(getDoubleTI()->setForWhere[1]((ElemPtr)&negativeRoundValue));
     }
     
     // Test isPositive()
@@ -108,15 +108,15 @@ class DoubleTypeInfoTest : public ::testing::Test {
         double negativeValue = -5.0;
         double zeroValue = 0.0;
     
-        EXPECT_TRUE(getDoubleTI()->setForWhere[2]((elemPtr)&positiveValue));
-        EXPECT_FALSE(getDoubleTI()->setForWhere[2]((elemPtr)&negativeValue));
-        EXPECT_FALSE(getDoubleTI()->setForWhere[2]((elemPtr)&zeroValue));
+        EXPECT_TRUE(getDoubleTI()->setForWhere[2]((ElemPtr)&positiveValue));
+        EXPECT_FALSE(getDoubleTI()->setForWhere[2]((ElemPtr)&negativeValue));
+        EXPECT_FALSE(getDoubleTI()->setForWhere[2]((ElemPtr)&zeroValue));
     }
     
     // Test oppose()
     TEST_F(DoubleTypeInfoTest, Oppose) {
         double value = 5.0;
-        elemPtr ptr = (elemPtr)&value;
+        ElemPtr ptr = (ElemPtr)&value;
         
         Exception result = getDoubleTI()->setForMap[0](ptr);
         
@@ -127,7 +127,7 @@ class DoubleTypeInfoTest : public ::testing::Test {
     // Test logarithm()
     TEST_F(DoubleTypeInfoTest, Logarithm) {
         double value = 100.0;
-        elemPtr ptr = (elemPtr)&value;
+        ElemPtr ptr = (ElemPtr)&value;
         
         Exception result = getDoubleTI()->setForMap[1](ptr);
         
@@ -136,11 +136,11 @@ class DoubleTypeInfoTest : public ::testing::Test {
     
         // Test special cases
         double zero = 0.0;
-        result = getDoubleTI()->setForMap[1]((elemPtr)&zero);
+        result = getDoubleTI()->setForMap[1]((ElemPtr)&zero);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         
         double negative = -100.0;
-        result = getDoubleTI()->setForMap[1]((elemPtr)&negative);
+        result = getDoubleTI()->setForMap[1]((ElemPtr)&negative);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_DOUBLE_EQ(*(double*)&negative, 2.0); // Should handle negative by taking abs
     }
@@ -151,15 +151,15 @@ class DoubleTypeInfoTest : public ::testing::Test {
         double negative = -5.0;
         double zero = 0.0;
     
-        Exception result = getDoubleTI()->setForMap[2]((elemPtr)&positive);
+        Exception result = getDoubleTI()->setForMap[2]((ElemPtr)&positive);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_DOUBLE_EQ(*(double*)&positive, 1.0);
     
-        result = getDoubleTI()->setForMap[2]((elemPtr)&negative);
+        result = getDoubleTI()->setForMap[2]((ElemPtr)&negative);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_DOUBLE_EQ(*(double*)&negative, -1.0);
     
-        result = getDoubleTI()->setForMap[2]((elemPtr)&zero);
+        result = getDoubleTI()->setForMap[2]((ElemPtr)&zero);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_DOUBLE_EQ(*(double*)&zero, 0.0);
     }
@@ -169,11 +169,11 @@ class DoubleTypeInfoTest : public ::testing::Test {
         double val1 = 5.0;
         double val2 = 3.0;
         
-        elemPtr result = getDoubleTI()->maximum((elemPtr)&val1, (elemPtr)&val2);
-        EXPECT_EQ(result, (elemPtr)&val1);
+        ElemPtr result = getDoubleTI()->maximum((ElemPtr)&val1, (ElemPtr)&val2);
+        EXPECT_EQ(result, (ElemPtr)&val1);
     
-        result = getDoubleTI()->maximum((elemPtr)&val2, (elemPtr)&val1);
-        EXPECT_EQ(result, (elemPtr)&val1);
+        result = getDoubleTI()->maximum((ElemPtr)&val2, (ElemPtr)&val1);
+        EXPECT_EQ(result, (ElemPtr)&val1);
     }
     
     // Test minDouble()
@@ -181,25 +181,25 @@ class DoubleTypeInfoTest : public ::testing::Test {
         double val1 = 5.0;
         double val2 = 3.0;
         
-        elemPtr result = getDoubleTI()->minimum((elemPtr)&val1, (elemPtr)&val2);
-        EXPECT_EQ(result, (elemPtr)&val2);
+        ElemPtr result = getDoubleTI()->minimum((ElemPtr)&val1, (ElemPtr)&val2);
+        EXPECT_EQ(result, (ElemPtr)&val2);
     
-        result = getDoubleTI()->minimum((elemPtr)&val2, (elemPtr)&val1);
-        EXPECT_EQ(result, (elemPtr)&val2);
+        result = getDoubleTI()->minimum((ElemPtr)&val2, (ElemPtr)&val1);
+        EXPECT_EQ(result, (ElemPtr)&val2);
     }
     
     // Test swapDouble()
     TEST_F(DoubleTypeInfoTest, SwapDouble) {
         double val1 = 5.0;
         double val2 = 3.0;
-        elemPtr ptr1 = (elemPtr)&val1;
-        elemPtr ptr2 = (elemPtr)&val2;
+        ElemPtr ptr1 = (ElemPtr)&val1;
+        ElemPtr ptr2 = (ElemPtr)&val2;
         
         Exception result = getDoubleTI()->swap(&ptr1, &ptr2);
         
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
-        EXPECT_EQ(ptr1, (elemPtr)&val2);
-        EXPECT_EQ(ptr2, (elemPtr)&val1);
+        EXPECT_EQ(ptr1, (ElemPtr)&val2);
+        EXPECT_EQ(ptr2, (ElemPtr)&val1);
     }
     
     // Test getDoubleTI()

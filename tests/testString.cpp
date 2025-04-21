@@ -7,11 +7,11 @@ extern "C" {
 class StringTypeInfoTest : public ::testing::Test {
     protected:
         char* testStr;
-        elemPtr testPtr;
+        ElemPtr testPtr;
     
         void SetUp() override {
             testStr = strdup("test");
-            testPtr = (elemPtr)testStr;
+            testPtr = (ElemPtr)testStr;
         }
     
         void TearDown() override {
@@ -28,7 +28,7 @@ class StringTypeInfoTest : public ::testing::Test {
     // Test deleteString()
     TEST_F(StringTypeInfoTest, DeleteString) {
         char* str = strdup("test\n");
-        Exception result = getStringTI()->destruct((elemPtr)str);
+        Exception result = getStringTI()->destruct((ElemPtr)str);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
     }
     
@@ -36,9 +36,9 @@ class StringTypeInfoTest : public ::testing::Test {
     TEST_F(StringTypeInfoTest, CopyString) {
         const char* source = "test string\n";
         // char* dest = nullptr;
-        elemPtr destPtr = malloc(sizeof(char*));
+        ElemPtr destPtr = malloc(sizeof(char*));
         
-        Exception result = getStringTI()->assign(&destPtr, (elemPtr) source);
+        Exception result = getStringTI()->assign(&destPtr, (ElemPtr) source);
         
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_STREQ((char*) destPtr, "test string\n");
@@ -53,32 +53,32 @@ class StringTypeInfoTest : public ::testing::Test {
         const char* str3 = "abc\n";
         
         // Test equal strings
-        EXPECT_EQ(getStringTI()->compare((elemPtr)str1, (elemPtr)str3), EQUAL);
+        EXPECT_EQ(getStringTI()->compare((ElemPtr)str1, (ElemPtr)str3), EQUAL);
         
         // Test less than
-        EXPECT_EQ(getStringTI()->compare((elemPtr)str1, (elemPtr)str2), LESS);
+        EXPECT_EQ(getStringTI()->compare((ElemPtr)str1, (ElemPtr)str2), LESS);
         
         // Test greater than
-        EXPECT_EQ(getStringTI()->compare((elemPtr)str2, (elemPtr)str1), GREATER);
+        EXPECT_EQ(getStringTI()->compare((ElemPtr)str2, (ElemPtr)str1), GREATER);
         
         // Test different lengths
         const char* str4 = "abcd\n";
-        EXPECT_EQ(getStringTI()->compare((elemPtr)str1, (elemPtr)str4), LESS);
-        EXPECT_EQ(getStringTI()->compare((elemPtr)str4, (elemPtr)str1), GREATER);
+        EXPECT_EQ(getStringTI()->compare((ElemPtr)str1, (ElemPtr)str4), LESS);
+        EXPECT_EQ(getStringTI()->compare((ElemPtr)str4, (ElemPtr)str1), GREATER);
     }
     
     // Test printString()
     TEST_F(StringTypeInfoTest, PrintString) {
         const char* str = "test string";
         testing::internal::CaptureStdout();
-        getStringTI()->print((elemPtr)str);
+        getStringTI()->print((ElemPtr)str);
         std::string output = testing::internal::GetCapturedStdout();
         EXPECT_EQ(output, "test string");
     }
     
     // Test inputString()
     TEST_F(StringTypeInfoTest, InputString) {
-        elemPtr result = nullptr;
+        ElemPtr result = nullptr;
         const char* input = "test input";
         
         Exception status = getStringTI()->input(&result, input);
@@ -95,9 +95,9 @@ class StringTypeInfoTest : public ::testing::Test {
         const char* upperFirst = "Test";
         const char* numberFirst = "1test";
         
-        EXPECT_TRUE(getStringTI()->setForWhere[0]((elemPtr)lowerFirst));
-        EXPECT_FALSE(getStringTI()->setForWhere[0]((elemPtr)upperFirst));
-        EXPECT_FALSE(getStringTI()->setForWhere[0]((elemPtr)numberFirst));
+        EXPECT_TRUE(getStringTI()->setForWhere[0]((ElemPtr)lowerFirst));
+        EXPECT_FALSE(getStringTI()->setForWhere[0]((ElemPtr)upperFirst));
+        EXPECT_FALSE(getStringTI()->setForWhere[0]((ElemPtr)numberFirst));
     }
     
     // Test isDigit()
@@ -106,9 +106,9 @@ class StringTypeInfoTest : public ::testing::Test {
         const char* mixedString = "123abc";
         const char* noDigits = "abcde";
         
-        EXPECT_TRUE(getStringTI()->setForWhere[1]((elemPtr)allDigits));
-        EXPECT_FALSE(getStringTI()->setForWhere[1]((elemPtr)mixedString));
-        EXPECT_FALSE(getStringTI()->setForWhere[1]((elemPtr)noDigits));
+        EXPECT_TRUE(getStringTI()->setForWhere[1]((ElemPtr)allDigits));
+        EXPECT_FALSE(getStringTI()->setForWhere[1]((ElemPtr)mixedString));
+        EXPECT_FALSE(getStringTI()->setForWhere[1]((ElemPtr)noDigits));
     }
     
     // Test isUpperCase()
@@ -117,16 +117,16 @@ class StringTypeInfoTest : public ::testing::Test {
         const char* mixedCase = "TeSt";
         const char* allLower = "test";
         
-        EXPECT_TRUE(getStringTI()->setForWhere[2]((elemPtr)allUpper));
-        EXPECT_FALSE(getStringTI()->setForWhere[2]((elemPtr)mixedCase));
-        EXPECT_FALSE(getStringTI()->setForWhere[2]((elemPtr)allLower));
+        EXPECT_TRUE(getStringTI()->setForWhere[2]((ElemPtr)allUpper));
+        EXPECT_FALSE(getStringTI()->setForWhere[2]((ElemPtr)mixedCase));
+        EXPECT_FALSE(getStringTI()->setForWhere[2]((ElemPtr)allLower));
     }
     
     // Test invertString()
     TEST_F(StringTypeInfoTest, InvertString) {
         char* str = strdup("Hello");
         
-        Exception result = getStringTI()->setForMap[0]((elemPtr)str);
+        Exception result = getStringTI()->setForMap[0]((ElemPtr)str);
         
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_STREQ(str, "olleH");
@@ -138,7 +138,7 @@ class StringTypeInfoTest : public ::testing::Test {
     TEST_F(StringTypeInfoTest, ToLowerCase) {
         char* str = strdup("HELLO");
         
-        Exception result = getStringTI()->setForMap[1]((elemPtr)str);
+        Exception result = getStringTI()->setForMap[1]((ElemPtr)str);
         
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_STREQ(str, "hello");
@@ -150,7 +150,7 @@ class StringTypeInfoTest : public ::testing::Test {
     TEST_F(StringTypeInfoTest, GetFirstLiteral) {
         char* str = strdup("Hello");
         
-        Exception result = getStringTI()->setForMap[2]((elemPtr)str);
+        Exception result = getStringTI()->setForMap[2]((ElemPtr)str);
         
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         EXPECT_STREQ(str, "H");
@@ -163,11 +163,11 @@ class StringTypeInfoTest : public ::testing::Test {
         const char* str1 = "abc";
         const char* str2 = "def";
         
-        elemPtr result = getStringTI()->maximum((elemPtr)str1, (elemPtr)str2);
-        EXPECT_EQ(result, (elemPtr)str2);
+        ElemPtr result = getStringTI()->maximum((ElemPtr)str1, (ElemPtr)str2);
+        EXPECT_EQ(result, (ElemPtr)str2);
         
-        result = getStringTI()->maximum((elemPtr)str2, (elemPtr)str1);
-        EXPECT_EQ(result, (elemPtr)str2);
+        result = getStringTI()->maximum((ElemPtr)str2, (ElemPtr)str1);
+        EXPECT_EQ(result, (ElemPtr)str2);
     }
     
     // Test minString()
@@ -175,19 +175,19 @@ class StringTypeInfoTest : public ::testing::Test {
         const char* str1 = "abc";
         const char* str2 = "def";
         
-        elemPtr result = getStringTI()->minimum((elemPtr)str1, (elemPtr)str2);
-        EXPECT_EQ(result, (elemPtr)str1);
+        ElemPtr result = getStringTI()->minimum((ElemPtr)str1, (ElemPtr)str2);
+        EXPECT_EQ(result, (ElemPtr)str1);
         
-        result = getStringTI()->minimum((elemPtr)str2, (elemPtr)str1);
-        EXPECT_EQ(result, (elemPtr)str1);
+        result = getStringTI()->minimum((ElemPtr)str2, (ElemPtr)str1);
+        EXPECT_EQ(result, (ElemPtr)str1);
     }
     
     // Test swapString()
     TEST_F(StringTypeInfoTest, SwapString) {
         char* str1 = strdup("first");
         char* str2 = strdup("second");
-        elemPtr ptr1 = (elemPtr)str1;
-        elemPtr ptr2 = (elemPtr)str2;
+        ElemPtr ptr1 = (ElemPtr)str1;
+        ElemPtr ptr2 = (ElemPtr)str2;
         
         Exception result = getStringTI()->swap(&ptr1, &ptr2);
         
@@ -226,20 +226,20 @@ class StringTypeInfoTest : public ::testing::Test {
     TEST_F(StringTypeInfoTest, EdgeCases) {
         // Empty string
         char* emptyStr = strdup("");
-        EXPECT_FALSE(getStringTI()->setForWhere[0]((elemPtr)emptyStr));
-        EXPECT_TRUE(getStringTI()->setForWhere[1]((elemPtr)emptyStr));
-        EXPECT_TRUE(getStringTI()->setForWhere[2]((elemPtr)emptyStr));
+        EXPECT_FALSE(getStringTI()->setForWhere[0]((ElemPtr)emptyStr));
+        EXPECT_TRUE(getStringTI()->setForWhere[1]((ElemPtr)emptyStr));
+        EXPECT_TRUE(getStringTI()->setForWhere[2]((ElemPtr)emptyStr));
         free(emptyStr);
         
         // NULL pointer handling
         char* nullStr = nullptr;
-        EXPECT_EQ(getStringTI()->assign(&testPtr, (elemPtr)nullStr), MEMORY_ALLOCATION_ERROR);
+        EXPECT_EQ(getStringTI()->assign(&testPtr, (ElemPtr)nullStr), MEMORY_ALLOCATION_ERROR);
         
         // Long string
         char* longStr = (char*)malloc(1000);
         memset(longStr, 'A', 999);
         longStr[999] = '\0';
-        Exception result = getStringTI()->setForMap[1]((elemPtr)longStr);
+        Exception result = getStringTI()->setForMap[1]((ElemPtr)longStr);
         EXPECT_EQ(result, SUCCESSFUL_EXECUTION);
         free(longStr);
     }
