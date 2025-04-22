@@ -57,7 +57,7 @@ printMessage printError( const Exception exeCode ) {
 
 
 printMessage printExit() {
-    // system( "clear" );
+    system( "clear" );
     printf( "Exexcution successfully finished.\n" );
 }
 
@@ -73,7 +73,7 @@ printMenu printMainMenu() {
 
 
 printMenu printKboardInputMenu() {
-    // system( "clear" );
+    system( "clear" );
     printf( "Confirm to procceed to keyboard input.\n\t\t-----\n" );
     printf( "1 - confirm and proceed to strings input. Can consist of symbols from standard 7 bit ASCII table.\n" );
     printf( "2 - confirm and proceed to input real numbers. Can be provided in decimal format.\n");
@@ -82,7 +82,7 @@ printMenu printKboardInputMenu() {
 
 
 printMenu printMapMenu() {
-    // system( "clear" );
+    system( "clear" );
     printf( "Choose one of the following functions to perform on a chosen array. Enter a number of chosen function.\n" );
     printf( "0 - Return to main menu.\n" );
     printf( "1 - Invert all elements: returns opposite element for real numbers and inverts the strings\n" );
@@ -92,7 +92,7 @@ printMenu printMapMenu() {
 
 
 printMenu printWhereMenu() {
-    // system( "clear" );
+    system( "clear" );
     printf( "Choose one of the following functions to perform on a chosen array. Enter a number of chosen function.\n" );
     printf( "0 - Return to main menu.\n" );
     printf( "1 - Find all elements that are \"normalized\": a string is considered normalized when it's beginning with a" 
@@ -104,7 +104,7 @@ printMenu printWhereMenu() {
 
 
 printMenu printArrayManagingMenu() {
-    // system( "clear" );
+    system( "clear" );
     printf( "Choose operation to perform on arrays. Again, enter a number of chosen operation.\n" );
     printf( "0. Return to main menu.\n" );
     printf( "1. Sort one of the arrays available in the storage.\n" );
@@ -115,14 +115,14 @@ printMenu printArrayManagingMenu() {
 
 
 printMenu printConcatMenu() {
-    // system( "clear" );
+    system( "clear" );
     printf( "0 - Return to main menu.\n" );
     printf( "1 - Choose two arrays to concatenate. Consecutively enter numbers of chosen arrays.\n" );
 }
 
 
 printMenu printSortingMenu() {
-    // system( "clear" );
+    system( "clear" );
     printf( "Choose sorting method. Again, enter a number of chosen method.\n" );
     printf( "0. Return to main menu.\n" );
     printf( "1. Ascending bubble sort.\n" );
